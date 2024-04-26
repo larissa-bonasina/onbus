@@ -1,20 +1,19 @@
 <template>
   <div class="page-container">
     <div class="logo-container">
-      <img src="assets/logo.png" alt="App Logo" />
+      <img src="src/assets/logo.png" alt="App Logo" />
     </div>
 
     <div class="content-container">
       <div class="blue-square">
-        <p class="square-text">Welcome to our App!</p>
-        <p class="square-text">
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+        <p class="square-text1">Bem vindo!</p>
+        <p class="square-text2">
+          OnBus, o aplicativo de controle para universitários intermuniscipais!
         </p>
-      </div>
-
-      <div class="button-container">
-        <q-btn label="Login" @click="login" />
-        <q-btn label="Signup" @click="signup" />
+        <div class="button-container">
+          <q-btn label="Login" @click="login" />
+          <q-btn label="Signup" @click="signup" />
+        </div>
       </div>
     </div>
   </div>
@@ -42,7 +41,7 @@ export default {
   align-items: center;
   justify-content: center;
   height: 100vh;
-  background-color: #f5f5f5;
+  background-color: #ffffff;
 }
 
 .logo-container {
@@ -67,9 +66,15 @@ export default {
   margin-bottom: 20px;
 }
 
-.square-text {
+.square-text2 {
   margin: 0;
   font-size: 16px;
+  line-height: 1.5;
+}
+
+.square-text1 {
+  margin: 0;
+  font-size: 30px;
   line-height: 1.5;
 }
 
