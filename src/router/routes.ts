@@ -4,11 +4,15 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/',
     component: () => import('layouts/MainLayout.vue'),
-    children: [{ path: '', component: () => import('pages/IndexPage.vue') }],
+    children: [{ path: '', component: () => import('pages/TelaInicial.vue') }],
   },
-
-  // Always leave this as last one,
-  // but you can also remove it
+  // Aqui você pode adicionar outras rotas, se necessário
+  {
+    path: '/outra-rota',
+    component: () => import('layouts/MainLayout.vue'),
+    children: [{ path: '', component: () => import('pages/OutraPagina.vue') }],
+  },
+  // Leave the catch-all route as the last one
   {
     path: '/:catchAll(.*)*',
     component: () => import('pages/ErrorNotFound.vue'),
