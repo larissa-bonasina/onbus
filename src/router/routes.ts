@@ -1,22 +1,12 @@
 import { RouteRecordRaw } from 'vue-router';
+import TelaInicial from 'pages/TelaInicial.vue'; // Certifique-se de importar corretamente sua TelaInicial.vue
 
 const routes: RouteRecordRaw[] = [
   {
     path: '/',
-    component: () => import('layouts/MainLayout.vue'),
-    children: [{ path: '', component: () => import('pages/TelaInicial.vue') }],
+    component: TelaInicial,
   },
-  // Aqui você pode adicionar outras rotas, se necessário
-  {
-    path: '/outra-rota',
-    component: () => import('layouts/MainLayout.vue'),
-    children: [{ path: '', component: () => import('pages/OutraPagina.vue') }],
-  },
-  // Leave the catch-all route as the last one
-  {
-    path: '/:catchAll(.*)*',
-    component: () => import('pages/ErrorNotFound.vue'),
-  },
+  // outras rotas
 ];
 
 export default routes;
