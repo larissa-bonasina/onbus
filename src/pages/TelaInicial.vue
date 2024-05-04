@@ -1,18 +1,27 @@
 <template>
   <div class="page-container">
-    <div class="logo-container">
-      <img src="src/assets/logo.png" alt="App Logo" />
-    </div>
-
     <div class="content-container">
+      <div class="logo-container">
+        <img
+          src="src/assets/logo.png"
+          alt="App Logo"
+          style="width: 250px; height: auto"
+        />
+        <img
+          src="src/assets/freepik--Bus--inject-5.png"
+          alt="onibus"
+          style="width: 150px; height: auto"
+        />
+      </div>
+
       <div class="blue-square">
         <p class="square-text1">Bem vindo!</p>
         <p class="square-text2">
           OnBus, o aplicativo de controle para universitários intermuniscipais!
         </p>
         <div class="button-container">
-          <q-btn label="Login" @click="login" />
-          <q-btn label="Signup" @click="signup" />
+          <q-btn label="Login" class="login-btn" @click="login" />
+          <q-btn label="Signup" class="signup-btn" @click="signup" />
         </div>
       </div>
     </div>
@@ -23,12 +32,12 @@
 export default {
   methods: {
     login() {
-      // Implement login logic here
-      console.log('Login button clicked');
+      // Implemente aqui a lógica de signup
+      console.log('Botão de signup clicado');
     },
     signup() {
-      // Implement signup logic here
-      console.log('Signup button clicked');
+      // Implemente aqui a lógica de signup
+      console.log('Botão de signup clicado');
     },
   },
 };
@@ -45,7 +54,7 @@ export default {
 }
 
 .logo-container {
-  margin-bottom: 40px;
+  margin-top: 50px;
 }
 
 .logo-container img {
@@ -58,34 +67,48 @@ export default {
 }
 
 .blue-square {
-  width: 300px;
-  height: 150px;
-  background-color: #007bff;
+  width: 100%;
+  height: 200%;
+  background-color: #1b24ff;
   padding: 20px;
-  color: white;
-  margin-bottom: 20px;
 }
 
 .square-text2 {
   margin: 0;
-  font-size: 16px;
+  font-size: 18px;
   line-height: 1.5;
+  color: #ffffff;
+  font-family: sans-serif;
+  text-align: left;
+  margin-left: 30px;
 }
 
 .square-text1 {
   margin: 0;
   font-size: 30px;
   line-height: 1.5;
+  color: #ffffff;
+  font-family: sans-serif;
 }
 
 .button-container {
   display: flex;
-  justify-content: space-between;
-  width: 300px;
-  margin: 0 auto;
+  justify-content: center;
+  margin-top: 20px;
 }
 
-q-btn {
-  margin: 0 10px;
+.login-btn {
+  margin-right: 10px;
+  background-color: #1d1a1a;
+  color: #fff;
+  border-radius: 25px;
+  padding: 15px 30px;
+}
+
+.signup-btn {
+  background-color: #ffffff;
+  color: #1d1a1a;
+  border-radius: 25px;
+  padding: 15px 20px;
 }
 </style>
