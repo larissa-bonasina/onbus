@@ -1,44 +1,57 @@
 <template>
-  <div class="page-container">
-    <div class="content-container">
-      <div class="logo-container">
-        <img
-          src="src/assets/logo.png"
-          alt="App Logo"
-          style="width: 250px; height: auto"
-        />
-        <img
-          src="src/assets/freepik--Bus--inject-5.png"
-          alt="onibus"
-          style="width: 150px; height: auto"
-        />
+  <q-page>
+    <div class="page-container">
+      <div class="top-section">
+        <div class="logo-container">
+          <img src="src/assets/logo.png" alt="App Logo" />
+        </div>
+        <div class="bus-container">
+          <img src="src/assets/freepik--Bus--inject-5.png" alt="onibus" />
+        </div>
       </div>
-
       <div class="blue-square">
-        <p class="square-text1">Bem vindo!</p>
-        <p class="square-text2">
-          OnBus, o aplicativo de controle para universitários intermuniscipais!
-        </p>
+        <div class="content-wrapper">
+          <p class="square-text1">Bem vindo!</p>
+          <p class="square-text2">
+            OnBus, o aplicativo de controle para universitários intermunicipais!
+          </p>
+        </div>
         <div class="button-container">
-          <q-btn label="Login" class="login-btn" @click="login" />
-          <q-btn label="Signup" class="signup-btn" @click="signup" />
+          <q-btn
+            label="Login"
+            class="login-btn"
+            @click="goToLogin"
+          />
+          <q-btn
+            label="Signup"
+            class="signup-btn"
+            @click="goToSignup"
+          />
         </div>
       </div>
     </div>
-  </div>
+  </q-page>
 </template>
 
 <script>
+import { useRouter } from 'vue-router';
+
 export default {
-  methods: {
-    login() {
-      // Implemente aqui a lógica de signup
-      console.log('Botão de signup clicado');
-    },
-    signup() {
-      // Implemente aqui a lógica de signup
-      console.log('Botão de signup clicado');
-    },
+  setup() {
+    const router = useRouter();
+
+    const goToLogin = () => {
+      router.push('/login');
+    };
+
+    const goToSignup = () => {
+      router.push('/signup');
+    };
+
+    return {
+      goToLogin,
+      goToSignup,
+    };
   },
 };
 </script>
@@ -48,67 +61,85 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
   height: 100vh;
   background-color: #ffffff;
-}
-
-.logo-container {
-  margin-top: 50px;
-}
-
-.logo-container img {
-  width: 200px;
-  height: auto;
-}
-
-.content-container {
   text-align: center;
 }
 
-.blue-square {
-  width: 100%;
-  height: 200%;
-  background-color: #1b24ff;
-  padding: 20px;
+.top-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 20px;
 }
 
-.square-text2 {
-  margin: 0;
-  font-size: 18px;
-  line-height: 1.5;
-  color: #ffffff;
-  font-family: sans-serif;
-  text-align: left;
-  margin-left: 30px;
+.logo-container img {
+  width: 50vw;
+  max-width: 250px;
+  height: auto;
+}
+
+.bus-container img {
+  width: 30vw;
+  max-width: 200px;
+  height: auto;
+  margin-top: 20px;
+}
+
+.blue-square {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 100%;
+  background-color: #1b24ff;
+  padding: 20px;
+  height: 40vh;
+  box-sizing: border-box;
+}
+
+.content-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
 }
 
 .square-text1 {
   margin: 0;
-  font-size: 30px;
-  line-height: 1.5;
+  font-size: 2em;
   color: #ffffff;
   font-family: sans-serif;
 }
 
+.square-text2 {
+  margin-top: 10px;
+  font-size: 1.2em;
+  color: #f0f0f0;
+  font-family: sans-serif;
+  text-align: left;
+}
+
 .button-container {
   display: flex;
-  justify-content: center;
-  margin-top: 20px;
+  justify-content: space-around;
+  width: 100%;
+}
+
+.login-btn,
+.signup-btn {
+  margin: 0 10px;
+  border-radius: 25px;
+  padding: 15px 30px;
+  font-size: 1em;
 }
 
 .login-btn {
-  margin-right: 10px;
   background-color: #1d1a1a;
   color: #fff;
-  border-radius: 25px;
-  padding: 15px 30px;
 }
 
 .signup-btn {
   background-color: #ffffff;
   color: #1d1a1a;
-  border-radius: 25px;
-  padding: 15px 20px;
 }
 </style>
