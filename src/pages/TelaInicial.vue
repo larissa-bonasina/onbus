@@ -17,16 +17,8 @@
           </p>
         </div>
         <div class="button-container">
-          <q-btn
-            label="Login"
-            class="login-btn"
-            @click="goToLogin"
-          />
-          <q-btn
-            label="Signup"
-            class="signup-btn"
-            @click="goToSignup"
-          />
+          <q-btn label="Login" class="login-btn" @click="goToLogin" />
+          <q-btn label="Signup" class="signup-btn" @click="goToSignup" />
         </div>
       </div>
     </div>
