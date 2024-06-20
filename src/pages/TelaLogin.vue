@@ -9,28 +9,47 @@
           <img src="src/assets/Fingerprint-bro 2.png" alt="fingerprint" />
         </div>
       </div>
-      <div class="button-container">
-        <q-btn label="Enter your e-mail..." class="email" />
-        <q-btn label="Password" class="password" />
+      <div class="input-container">
+        <q-input
+          filled
+          v-model="email"
+          label="Enter your e-mail..."
+          class="email"
+          rounded
+        />
+        <q-input
+          filled
+          v-model="password"
+          label="Password"
+          type="password"
+          class="password"
+          rounded
+        />
       </div>
-      <q-btn label="Login" class="entrar" @click="goToLogin" />
+      <q-btn label="Login" class="entrar" @click="goToMainPage" />
     </div>
   </q-page>
 </template>
 
 <script>
 import { useRouter } from 'vue-router';
+import { ref } from 'vue';
 
 export default {
   setup() {
     const router = useRouter();
+    const email = ref('');
+    const password = ref('');
 
-    const goToLogin = () => {
-      router.push('/login');
+    const goToMainPage = () => {
+      // Adicione a lógica de autenticação aqui, se necessário
+      router.push('/principal');
     };
 
     return {
-      goToLogin,
+      email,
+      password,
+      goToMainPage,
     };
   },
   methods: {
@@ -47,7 +66,7 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center; /* Ajuste para centralizar os botões verticalmente */
+  justify-content: center;
   height: 100vh;
   background-color: rgba(230, 228, 245, 1);
   text-align: center;
@@ -67,12 +86,13 @@ export default {
   margin-bottom: 50px;
 }
 
-.button-container {
+.input-container {
   display: flex;
   flex-direction: column;
-  width: 80%; /* Ajuste para uma largura adequada */
-  max-width: 300px; /* Ajuste para uma largura máxima */
+  width: 80%;
+  max-width: 300px;
   margin-top: 20px;
+  gap: 15px; /* Espaçamento entre os inputs */
 }
 
 .q-btn {
@@ -85,15 +105,18 @@ export default {
 .password {
   background-color: #ffffff;
   color: #1d1a1a;
+  border-radius: 25px;
+  height: 50px;
 }
 
 .entrar {
   background-color: #007bff;
   color: #ffffff;
   padding: 5px;
-  width: 40%; /* Ajuste para uma largura adequada */
+  width: 40%;
   max-width: 300px;
   margin-top: 30px;
+  border-radius: 15px; /* Borda mais arredondada */
 }
 
 .back-button {

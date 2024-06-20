@@ -19,7 +19,8 @@
     "quasar": "^2.8.0",
     "vue": "^3.4.18",
     "vue-i18n": "^9.2.2",
-    "vue-router": "^4.3.2"
+    "vue-router": "^4.3.2",
+    "vue2-google-maps": "^0.10.7"
   },
   "devDependencies": {
     "@intlify/vite-plugin-vue-i18n": "^3.3.1",
