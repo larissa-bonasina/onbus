@@ -26,7 +26,7 @@
           rounded
         />
       </div>
-      <q-btn label="Login" class="entrar" @click="goToMainPage" />
+      <q-btn label="Login" class="entrar" @click="login" />
     </div>
   </q-page>
 </template>
@@ -34,6 +34,7 @@
 <script>
 import { useRouter } from 'vue-router';
 import { ref } from 'vue';
+import axios from 'axios';
 
 export default {
   setup() {
@@ -41,20 +42,36 @@ export default {
     const email = ref('');
     const password = ref('');
 
-    const goToMainPage = () => {
-      // Adicione a lógica de autenticação aqui, se necessário
-      router.push('/principal');
+    const login = async () => {
+      try {
+        console.log('Email:', email.value);
+        console.log('Password:', password.value);
+
+        const response = await axios.post(
+          'http://localhost:3000/api/auth/login',
+          {
+            email: email.value,
+            password: password.value,
+          }
+        );
+
+        console.log('Response data:', response.data);
+        alert('Login successful');
+        router.push('/principal');
+      } catch (error) {
+        console.error('Login failed:', error);
+        alert('Invalid email or password');
+      }
     };
 
     return {
       email,
       password,
-      goToMainPage,
+      login,
     };
   },
   methods: {
     goBack() {
-      // Lógica para voltar para a página anterior
       this.$router.go(-1);
     },
   },
