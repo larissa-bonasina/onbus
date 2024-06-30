@@ -26,6 +26,18 @@
 
     <!-- Conteúdo principal -->
     <div class="content-container">
+      <div class="maps-container">
+        <iframe
+          src="https://www.google.com/maps/embed?pb=!1m26!1m12!1m3!1d249712.43137777483!2d-55.57690611876771!3d-12.06025126503323!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!4m11!3e6!4m3!3m2!1d-12.28707!2d-55.299622199999995!4m5!1s0x93a7814df51f200b%3A0xfb52499fb01d8b8b!2sgoogle%20maps%20fasipe%20aquarela%20sinop%20id!3m2!1d-11.8345415!2d-55.5480798!5e0!3m2!1spt-BR!2sbr!4v1719719844204!5m2!1spt-BR!2sbr"
+          width="300"
+          height="350"
+          style="border: 0; margin: auto; display: block"
+          allowfullscreen=""
+          loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade"
+        ></iframe>
+      </div>
+
       <div class="status-container">
         <div class="status-label">STATUS:</div>
         <div class="status-text">{{ attendanceStatus }}</div>
@@ -40,6 +52,7 @@
         @mousemove="drag"
         @mouseup="stopDrag"
         @mouseleave="stopDrag"
+        ref="sliderContainer"
       >
         <q-btn
           class="slide-button"
@@ -77,29 +90,34 @@ export default {
   name: 'IndexPage',
   data() {
     return {
-      isDragging: false,
-      initialX: 0,
-      offsetX: 0,
-      buttonWidth: 40,
-      containerWidth: 200,
-      status: 'INDEFINIDO',
-      attendanceStatus: 'INDEFINIDO',
       isNavOpen: false,
       navButtons: [
-        { id: 1, label: 'Barra de funcionalidades' },
-        { id: 2, label: 'Boletos e pagamentos' },
-        { id: 3, label: 'Regras da associação' },
+        { id: 1, label: 'Button 1' },
+        { id: 2, label: 'Button 2' },
+        { id: 3, label: 'Button 3' },
         { id: 4, label: 'Button 4' },
         { id: 5, label: 'Button 5' },
         { id: 6, label: 'Button 6' },
         { id: 7, label: 'Button 7' },
         { id: 8, label: 'Button 8' },
-        { id: 9, label: 'Meu perfil' },
+        { id: 9, label: 'Button 9' },
         { id: 10, label: 'Button 10' },
       ],
+      attendanceStatus: 'INDEFINIDO',
+      status: 'INDEFINIDO',
+      isDragging: false,
+      buttonWidth: 40,
+      containerWidth: 200,
+      offsetX: 0,
     };
   },
   methods: {
+    toggleNav() {
+      this.isNavOpen = !this.isNavOpen;
+    },
+    setAttendanceStatus(status) {
+      this.attendanceStatus = status;
+    },
     onButtonClick() {
       if (this.status === 'CHECK IN') {
         this.status = 'CHECK OUT';
@@ -113,37 +131,32 @@ export default {
       }
     },
 
-    setAttendanceStatus(status) {
-      this.attendanceStatus = status;
-    },
-    startDrag(event) {
+    startDrag() {
       this.isDragging = true;
-      this.initialX = event.clientX - this.offsetX;
-    },
-    stopDrag() {
-      this.isDragging = false;
     },
     drag(event) {
       if (this.isDragging) {
-        const newX = event.clientX;
-        const newOffsetX = newX - this.initialX;
-        if (
-          newOffsetX >= 0 &&
-          newOffsetX <= this.containerWidth - this.buttonWidth
-        ) {
-          this.offsetX = newOffsetX;
-        }
+        const button = this.$refs.button;
+        const rect = button.getBoundingClientRect();
+        const buttonWidth = rect.width;
+        const containerWidth = this.containerWidth;
+        let newPosition = event.clientX - rect.left - buttonWidth / 2;
+
+        newPosition = Math.max(0, newPosition);
+
+        newPosition = Math.min(containerWidth - buttonWidth, newPosition);
+
+        this.offsetX = newPosition;
       }
     },
-    toggleNav() {
-      this.isNavOpen = !this.isNavOpen;
+    stopDrag() {
+      this.isDragging = false;
     },
   },
   computed: {
     buttonStyle() {
       return {
         transform: `translateX(${this.offsetX}px)`,
-        boxShadow: '0px 0px 0px 8px rgba(49, 57, 233, 0.1)',
       };
     },
   },
@@ -151,6 +164,10 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.maps-container {
+  margin-bottom: 20px;
+}
+
 .index-page {
   background-color: #e6e4f5;
   display: flex;
@@ -164,6 +181,7 @@ export default {
 
 .header {
   color: black;
+  text-align: left;
 }
 
 .nav-toggle {
@@ -171,7 +189,7 @@ export default {
   top: 20px;
   right: 20px;
   cursor: pointer;
-  z-index: 999;
+  z-index: 9999;
 }
 
 .nav-bar {
@@ -180,10 +198,11 @@ export default {
   right: 0;
   width: 250px;
   height: 100vh;
-  background-color: rgba(49, 57, 233, 0.85);
+  background-color: #3139e9;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
   transform: translateX(100%);
   transition: transform 0.3s ease;
+  z-index: 9998;
 }
 
 .nav-bar-open {
@@ -195,6 +214,7 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: center;
+  z-index: 9997;
 }
 
 .nav-button {
@@ -250,6 +270,7 @@ export default {
   cursor: pointer;
   font-weight: normal;
   margin-bottom: 20px;
+  overflow: hidden;
 }
 
 .slide-button {
@@ -269,6 +290,7 @@ export default {
   display: flex;
   flex-direction: column;
   margin-bottom: 20px;
+  z-index: 1;
 }
 
 .comparecer-button {

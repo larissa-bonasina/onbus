@@ -42,7 +42,6 @@ export default {
     const password = ref('');
 
     const goToMainPage = () => {
-      // Adicione a lógica de autenticação aqui, se necessário
       router.push('/principal');
     };
 
@@ -54,7 +53,6 @@ export default {
   },
   methods: {
     goBack() {
-      // Lógica para voltar para a página anterior
       this.$router.go(-1);
     },
   },
@@ -92,7 +90,7 @@ export default {
   width: 80%;
   max-width: 300px;
   margin-top: 20px;
-  gap: 15px; /* Espaçamento entre os inputs */
+  gap: 15px;
 }
 
 .q-btn {
@@ -116,7 +114,7 @@ export default {
   width: 40%;
   max-width: 300px;
   margin-top: 30px;
-  border-radius: 15px; /* Borda mais arredondada */
+  border-radius: 15px;
 }
 
 .back-button {
