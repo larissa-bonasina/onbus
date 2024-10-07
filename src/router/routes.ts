@@ -7,7 +7,7 @@ import TelaPerfil from 'src/pages/TelaPerfil.vue';
 
 const routes: RouteRecordRaw[] = [
   {
-    path: '/ ',
+    path: '',
     component: TelaInicial,
   },
   {

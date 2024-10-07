@@ -101,7 +101,7 @@ export default {
         { id: 7, label: 'Button 7' },
         { id: 8, label: 'Button 8' },
         { id: 9, label: 'Button 9' },
-        { id: 10, label: 'Button 10' },
+        { id: 10, label: 'SAIR', route: '/inicial' },
       ],
       attendanceStatus: 'INDEFINIDO',
       status: 'INDEFINIDO',

@@ -6,7 +6,11 @@
           <img src="src/assets/logo.png" alt="App Logo" />
         </div>
         <div class="bus-container">
-          <img src="src/assets/freepik--Bus--inject-5.png" alt="onibus" />
+          <img
+            src="src/assets/freepik--Bus--inject-5.png"
+            alt="onibus"
+            style="height: 90%; width: 100%; border-top: 10px"
+          />
         </div>
       </div>
       <div class="blue-square">

@@ -51,10 +51,8 @@
         <div class="info-item">
           <span class="info-label">Senha:</span>
           <span class="info-value">*********</span>
-          <!-- Mostrando senha como asteriscos -->
         </div>
 
-        <!-- Botões -->
         <div class="alterar-button-container">
           <template v-if="!isEditing">
             <q-btn
@@ -79,6 +77,9 @@
             />
           </template>
         </div>
+      </div>
+      <div>
+        <img src="src/assets/school bus-rafiki 1.png" alt="onibus" />
       </div>
     </div>
   </div>
