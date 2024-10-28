@@ -27,15 +27,14 @@
     <!-- Conteúdo principal -->
     <div class="content-container">
       <div class="maps-container">
-        <iframe
-          src="https://www.google.com/maps/embed?pb=!1m26!1m12!1m3!1d249712.43137777483!2d-55.57690611876771!3d-12.06025126503323!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!4m11!3e6!4m3!3m2!1d-12.28707!2d-55.299622199999995!4m5!1s0x93a7814df51f200b%3A0xfb52499fb01d8b8b!2sgoogle%20maps%20fasipe%20aquarela%20sinop%20id!3m2!1d-11.8345415!2d-55.5480798!5e0!3m2!1spt-BR!2sbr!4v1719719844204!5m2!1spt-BR!2sbr"
-          width="300"
-          height="350"
-          style="border: 0; margin: auto; display: block"
-          allowfullscreen=""
-          loading="lazy"
-          referrerpolicy="no-referrer-when-downgrade"
-        ></iframe>
+        <GoogleMap
+          api-key="YOUR_GOOGLE_MAPS_API_KEY"
+          style="width: 100%; height: 500px"
+          :center="center"
+          :zoom="15"
+        >
+          <CustomMarker :options="{ position: center }" />
+        </GoogleMap>
       </div>
 
       <div class="status-container">
@@ -86,8 +85,15 @@
 </template>
 
 <script>
+import { GoogleMap, CustomMarker } from 'vue3-google-map';
+
 export default {
   name: 'IndexPage',
+  components: {
+    GoogleMap,
+    CustomMarker,
+  },
+
   data() {
     return {
       isNavOpen: false,
@@ -101,7 +107,7 @@ export default {
         { id: 7, label: 'Button 7' },
         { id: 8, label: 'Button 8' },
         { id: 9, label: 'Button 9' },
-        { id: 10, label: 'SAIR', route: '/inicial' },
+        { id: 10, label: 'Button 10' },
       ],
       attendanceStatus: 'INDEFINIDO',
       status: 'INDEFINIDO',
@@ -109,6 +115,7 @@ export default {
       buttonWidth: 40,
       containerWidth: 200,
       offsetX: 0,
+      center: { lat: 40.689247, lng: -74.044502 }, // Centro do mapa
     };
   },
   methods: {
@@ -130,7 +137,6 @@ export default {
         this.offsetX = this.containerWidth - this.buttonWidth;
       }
     },
-
     startDrag() {
       this.isDragging = true;
     },
@@ -143,7 +149,6 @@ export default {
         let newPosition = event.clientX - rect.left - buttonWidth / 2;
 
         newPosition = Math.max(0, newPosition);
-
         newPosition = Math.min(containerWidth - buttonWidth, newPosition);
 
         this.offsetX = newPosition;
@@ -165,6 +170,8 @@ export default {
 
 <style lang="scss" scoped>
 .maps-container {
+  width: 100%;
+  height: 400px;
   margin-bottom: 20px;
 }
 
@@ -176,7 +183,7 @@ export default {
   align-items: center;
   height: 100vh;
   position: relative;
-  padding-top: 20px;
+  padding: 20px;
 }
 
 .header {
@@ -226,6 +233,10 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+  }
 }
 
 .status-container {
@@ -234,26 +245,13 @@ export default {
   margin-bottom: 20px;
 }
 
-.status-label {
-  font-weight: normal;
-  margin-right: 10px;
-}
-
-.status-text {
-  font-weight: normal;
-}
-
-.embarque-container {
-  display: flex;
-  align-items: center;
-  margin-bottom: 20px;
-}
-
+.status-label,
 .embarque-label {
   font-weight: normal;
   margin-right: 10px;
 }
 
+.status-text,
 .embarque-text {
   font-weight: normal;
 }
@@ -291,6 +289,11 @@ export default {
   flex-direction: column;
   margin-bottom: 20px;
   z-index: 1;
+}
+
+.comparecer-button,
+.nao-comparecer-button {
+  transition: background-color 0.3s ease;
 }
 
 .comparecer-button {
