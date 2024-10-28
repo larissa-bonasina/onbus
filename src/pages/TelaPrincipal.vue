@@ -60,22 +60,26 @@
           @click="onButtonClick"
           ref="button"
         >
-          IN
+          {{ status }}
         </q-btn>
       </div>
       <div class="status-buttons">
         <q-btn
+          v-if="status === 'INDEFINIDO' || status === 'CHECK OUT'"
           class="comparecer-button"
           unelevated
-          @click="setAttendanceStatus('IREI COMPARECER')"
-          >IREI COMPARECER</q-btn
+          @click="doCheckin"
         >
+          IREI COMPARECER
+        </q-btn>
         <q-btn
+          v-if="status === 'INDEFINIDO' || status === 'CHECK IN'"
           class="nao-comparecer-button"
           outlined
-          @click="setAttendanceStatus('NÃO IREI COMPARECER')"
-          >NÃO IREI COMPARECER</q-btn
+          @click="doCheckout"
         >
+          NÃO IREI COMPARECER
+        </q-btn>
       </div>
       <a class="contact-link" href="https://wa.me/" target="_blank"
         >ENTRAR EM CONTATO COM A ASSOCIAÇÃO</a
@@ -85,7 +89,11 @@
 </template>
 
 <script>
+<<<<<<< HEAD
 import { GoogleMap, CustomMarker } from 'vue3-google-map';
+=======
+import axios from 'axios'; // Importar axios ou outro cliente HTTP que você esteja utilizando
+>>>>>>> 4d23217dfdbdb42383970bcf054c5557f6fa23af
 
 export default {
   name: 'IndexPage',
@@ -156,6 +164,31 @@ export default {
     },
     stopDrag() {
       this.isDragging = false;
+    },
+    async doCheckin() {
+      try {
+        const response = await axios.post('/api/auth/checkin', {
+          cpf: '12345678900', // Substitua pelo CPF real
+          status: 'CHECK IN',
+        });
+        console.log('Check-in realizado com sucesso:', response.data);
+        // Atualizar interface ou qualquer outra lógica necessária após o check-in
+      } catch (error) {
+        console.error('Erro ao realizar check-in:', error);
+        // Tratar erros ou feedback para o usuário
+      }
+    },
+    async doCheckout() {
+      try {
+        const response = await axios.post('/api/auth/checkout', {
+          checkinId: 'checkinId_aqui', // Substitua pelo ID real do check-in
+        });
+        console.log('Check-out realizado com sucesso:', response.data);
+        // Atualizar interface ou qualquer outra lógica necessária após o check-out
+      } catch (error) {
+        console.error('Erro ao realizar check-out:', error);
+        // Tratar erros ou feedback para o usuário
+      }
     },
   },
   computed: {
