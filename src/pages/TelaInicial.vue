@@ -6,7 +6,11 @@
           <img src="src/assets/logo.png" alt="App Logo" />
         </div>
         <div class="bus-container">
-          <img src="src/assets/freepik--Bus--inject-5.png" alt="onibus" />
+          <img
+            src="src/assets/freepik--Bus--inject-5.png"
+            alt="onibus"
+            style="height: 90%; width: 100%; border-top: 10px"
+          />
         </div>
       </div>
       <div class="blue-square">
@@ -19,6 +23,11 @@
         <div class="button-container">
           <q-btn label="Login" class="login-btn" @click="goToLogin" />
           <q-btn label="Signup" class="signup-btn" @click="goToSignup" />
+          <q-btn
+            label="Adm Associados"
+            class="adm-btn"
+            @click="goToValidaAdm"
+          />
         </div>
       </div>
     </div>
@@ -40,9 +49,14 @@ export default {
       router.push('/signup');
     };
 
+    const goToValidaAdm = () => {
+      router.push('/ValidaAdm');
+    };
+
     return {
       goToLogin,
       goToSignup,
+      goToValidaAdm,
     };
   },
 };
@@ -118,7 +132,8 @@ export default {
 }
 
 .login-btn,
-.signup-btn {
+.signup-btn,
+.adm-btn {
   margin: 0 10px;
   border-radius: 25px;
   padding: 15px 30px;
@@ -133,5 +148,10 @@ export default {
 .signup-btn {
   background-color: #ffffff;
   color: #1d1a1a;
+}
+
+.adm-btn {
+  background-color: #354aff;
+  color: #ffffff;
 }
 </style>

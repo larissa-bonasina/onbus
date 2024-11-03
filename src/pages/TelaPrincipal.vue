@@ -26,6 +26,19 @@
 
     <!-- Conteúdo principal -->
     <div class="content-container">
+      <div class="maps-container">
+        <!-- Iframe para exibir o Google Maps -->
+        <iframe
+          src="https://www.google.com.br/maps/@-12.284247,-55.3032913,14z?entry=ttu&g_ep=EgoyMDI0MTAyOS4wIKXMDSoASAFQAw%3D%3D"
+          width="100%"
+          height="500"
+          style="border: 0"
+          allowfullscreen=""
+          loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade"
+        ></iframe>
+      </div>
+
       <div class="status-container">
         <div class="status-label">STATUS:</div>
         <div class="status-text">{{ attendanceStatus }}</div>
@@ -40,6 +53,7 @@
         @mousemove="drag"
         @mouseup="stopDrag"
         @mouseleave="stopDrag"
+        ref="sliderContainer"
       >
         <q-btn
           class="slide-button"
@@ -77,35 +91,38 @@
 </template>
 
 <script>
-import axios from 'axios'; // Importar axios ou outro cliente HTTP que você esteja utilizando
-
 export default {
   name: 'IndexPage',
   data() {
     return {
-      isDragging: false,
-      initialX: 0,
-      offsetX: 0,
-      buttonWidth: 40,
-      containerWidth: 200,
-      status: 'INDEFINIDO',
-      attendanceStatus: 'INDEFINIDO',
       isNavOpen: false,
       navButtons: [
-        { id: 1, label: 'Barra de funcionalidades' },
-        { id: 2, label: 'Boletos e pagamentos' },
-        { id: 3, label: 'Regras da associação' },
+        { id: 1, label: 'Button 1' },
+        { id: 2, label: 'Button 2' },
+        { id: 3, label: 'Button 3' },
         { id: 4, label: 'Button 4' },
         { id: 5, label: 'Button 5' },
         { id: 6, label: 'Button 6' },
         { id: 7, label: 'Button 7' },
         { id: 8, label: 'Button 8' },
-        { id: 9, label: 'Meu perfil' },
+        { id: 9, label: 'Button 9' },
         { id: 10, label: 'Button 10' },
       ],
+      attendanceStatus: 'INDEFINIDO',
+      status: 'INDEFINIDO',
+      isDragging: false,
+      buttonWidth: 40,
+      containerWidth: 200,
+      offsetX: 0,
     };
   },
   methods: {
+    toggleNav() {
+      this.isNavOpen = !this.isNavOpen;
+    },
+    setAttendanceStatus(status) {
+      this.attendanceStatus = status;
+    },
     onButtonClick() {
       if (this.status === 'CHECK IN') {
         this.status = 'CHECK OUT';
@@ -118,31 +135,25 @@ export default {
         this.offsetX = this.containerWidth - this.buttonWidth;
       }
     },
-
-    setAttendanceStatus(status) {
-      this.attendanceStatus = status;
-    },
-    startDrag(event) {
+    startDrag() {
       this.isDragging = true;
-      this.initialX = event.clientX - this.offsetX;
-    },
-    stopDrag() {
-      this.isDragging = false;
     },
     drag(event) {
       if (this.isDragging) {
-        const newX = event.clientX;
-        const newOffsetX = newX - this.initialX;
-        if (
-          newOffsetX >= 0 &&
-          newOffsetX <= this.containerWidth - this.buttonWidth
-        ) {
-          this.offsetX = newOffsetX;
-        }
+        const button = this.$refs.button;
+        const rect = button.getBoundingClientRect();
+        const buttonWidth = rect.width;
+        const containerWidth = this.containerWidth;
+        let newPosition = event.clientX - rect.left - buttonWidth / 2;
+
+        newPosition = Math.max(0, newPosition);
+        newPosition = Math.min(containerWidth - buttonWidth, newPosition);
+
+        this.offsetX = newPosition;
       }
     },
-    toggleNav() {
-      this.isNavOpen = !this.isNavOpen;
+    stopDrag() {
+      this.isDragging = false;
     },
     async doCheckin() {
       try {
@@ -151,10 +162,8 @@ export default {
           status: 'CHECK IN',
         });
         console.log('Check-in realizado com sucesso:', response.data);
-        // Atualizar interface ou qualquer outra lógica necessária após o check-in
       } catch (error) {
         console.error('Erro ao realizar check-in:', error);
-        // Tratar erros ou feedback para o usuário
       }
     },
     async doCheckout() {
@@ -163,10 +172,8 @@ export default {
           checkinId: 'checkinId_aqui', // Substitua pelo ID real do check-in
         });
         console.log('Check-out realizado com sucesso:', response.data);
-        // Atualizar interface ou qualquer outra lógica necessária após o check-out
       } catch (error) {
         console.error('Erro ao realizar check-out:', error);
-        // Tratar erros ou feedback para o usuário
       }
     },
   },
@@ -174,158 +181,8 @@ export default {
     buttonStyle() {
       return {
         transform: `translateX(${this.offsetX}px)`,
-        boxShadow: '0px 0px 0px 8px rgba(49, 57, 233, 0.1)',
       };
     },
   },
 };
 </script>
-
-<style lang="scss" scoped>
-.index-page {
-  background-color: #e6e4f5;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  position: relative;
-  padding-top: 20px;
-}
-
-.header {
-  color: black;
-}
-
-.nav-toggle {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  cursor: pointer;
-  z-index: 999;
-}
-
-.nav-bar {
-  position: fixed;
-  top: 0;
-  right: 0;
-  width: 250px;
-  height: 100vh;
-  background-color: rgba(49, 57, 233, 0.85);
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-  transform: translateX(100%);
-  transition: transform 0.3s ease;
-}
-
-.nav-bar-open {
-  transform: translateX(0);
-}
-
-.nav-buttons {
-  padding-top: 60px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.nav-button {
-  margin-bottom: 10px;
-  width: 200px;
-  color: #ffffff;
-  font-size: 15px;
-  font-weight: normal;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.status-container {
-  display: flex;
-  align-items: center;
-  margin-bottom: 20px;
-}
-
-.status-label {
-  font-weight: normal;
-  margin-right: 10px;
-}
-
-.status-text {
-  font-weight: normal;
-}
-
-.embarque-container {
-  display: flex;
-  align-items: center;
-  margin-bottom: 20px;
-}
-
-.embarque-label {
-  font-weight: normal;
-  margin-right: 10px;
-}
-
-.embarque-text {
-  font-weight: normal;
-}
-
-.slider-container {
-  position: relative;
-  width: 200px;
-  height: 40px;
-  background-color: rgba(49, 57, 233, 0.1);
-  border-radius: 30px;
-  display: flex;
-  align-items: center;
-  padding: 0 10px;
-  cursor: pointer;
-  font-weight: normal;
-  margin-bottom: 20px;
-}
-
-.slide-button {
-  background-color: royalblue;
-  position: absolute;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  transition: transform 0.3s ease-in-out, background-color 0.3s ease-in-out;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-weight: normal;
-}
-
-.status-buttons {
-  display: flex;
-  flex-direction: column;
-  margin-bottom: 20px;
-}
-
-.comparecer-button {
-  background-color: rgba(53, 74, 255, 0.7);
-  color: #ffffff;
-  border: 1px solid #354aff;
-  border-radius: 13px;
-  width: 262px;
-  height: 43px;
-  margin-bottom: 10px;
-  font-weight: normal;
-}
-
-.nao-comparecer-button {
-  color: black;
-  border-radius: 13px;
-  font-weight: normal;
-}
-
-.contact-link {
-  color: #555454;
-  text-decoration: underline;
-  margin-top: 20px;
-  font-weight: normal;
-  font-size: 10px;
-  display: flex;
-  justify-content: center;
-}
-</style>
