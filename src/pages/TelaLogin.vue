@@ -44,23 +44,20 @@ export default {
 
     const login = async () => {
       try {
-        console.log('Email:', email.value);
-        console.log('Password:', password.value);
-
         const response = await axios.post(
-          'http://localhost:3000/api/auth/login',
+          'http://localhost:3000/alunos/login',
           {
             email: email.value,
-            password: password.value,
+            senha: password.value, // certifique-se de que o nome do campo seja o mesmo no backend
           }
         );
 
-        console.log('Response data:', response.data);
-        alert('Login successful');
+        console.log('Login realizado com sucesso:', response.data);
+        alert('Login realizado com sucesso!');
         router.push('/principal');
       } catch (error) {
-        console.error('Login failed:', error);
-        alert('Invalid email or password');
+        console.error('Falha no login:', error);
+        alert('E-mail ou senha inválidos');
       }
     };
 

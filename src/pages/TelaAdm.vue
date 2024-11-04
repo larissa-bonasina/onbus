@@ -2,55 +2,57 @@
   <div class="admin-page">
     <!-- Barra de navegação lateral -->
     <div class="sidebar">
-      <q-btn class="sidebar-btn" icon="dashboard" label="Lista de presença" />
-      <q-btn class="sidebar-btn" icon="person" label="Alunos" />
-      <!-- Outros botões da barra de navegação -->
+      <q-btn
+        class="sidebar-btn"
+        icon="dashboard"
+        label="Lista de Presença"
+        @click="selectSection('attendance')"
+      />
+      <q-btn
+        class="sidebar-btn"
+        icon="person"
+        label="Alunos"
+        @click="selectSection('students')"
+      />
+      <q-btn
+        class="sidebar-btn"
+        icon="receipt"
+        label="Prestação de Contas"
+        @click="selectSection('expenses')"
+      />
     </div>
 
     <!-- Conteúdo principal -->
     <div class="main-content">
-      <h2>Lista de Alunos</h2>
-      <q-table
-        :rows="students"
-        :columns="columns"
-        row-key="id"
-        class="students-table"
-      >
-        <template v-slot:body-cell-upload="props">
-          <q-td :props="props">
-            <q-btn
-              icon="cloud_upload"
-              color="primary"
-              @click="uploadBoleto(props.row)"
-              label="Upload Boleto"
-              class="rounded-btn"
-            />
-          </q-td>
-        </template>
-      </q-table>
+      <component :is="currentSectionComponent"></component>
     </div>
   </div>
 </template>
 
 <script>
+import AttendanceList from './AttendanceList.vue';
+import StudentsList from './StudentsList.vue';
+import ExpensesReport from './ExpensesReport.vue';
+
 export default {
   name: 'AdminPage',
   data() {
     return {
-      students: [
-        { id: 1, name: 'João Silva', course: 'Engenharia' },
-        { id: 2, name: 'Maria Souza', course: 'Direito' },
-      ],
-      columns: [
-        { name: 'name', label: 'Nome', field: 'name', align: 'left' },
-        { name: 'course', label: 'Curso', field: 'course', align: 'left' },
-        { name: 'upload', label: 'Upload Boleto', align: 'center' },
-      ],
+      currentSection: 'attendance', // seção inicial
     };
   },
+  computed: {
+    currentSectionComponent() {
+      return {
+        attendance: AttendanceList,
+        students: StudentsList,
+        expenses: ExpensesReport,
+      }[this.currentSection];
+    },
+  },
   methods: {
-    uploadBoleto(student) {
-      alert(`Fazer upload do boleto para: ${student.name}`);
+    selectSection(section) {
+      this.currentSection = section; // altera a seção atual
     },
   },
 };
@@ -84,16 +86,5 @@ export default {
   background-color: #f5f5f5;
   border-top-left-radius: 25px;
   border-bottom-left-radius: 25px;
-}
-
-.students-table {
-  margin-top: 20px;
-  background-color: #fff;
-  border-radius: 20px;
-  padding: 15px;
-}
-
-.rounded-btn {
-  border-radius: 20px;
 }
 </style>

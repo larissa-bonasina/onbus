@@ -83,7 +83,7 @@
           class="input-field"
           rounded
         />
-        <q-btn label="Signup" class="entrar" @click="goToLogin" />
+        <q-btn label="Signup" class="entrar" @click="register" />
       </div>
     </div>
   </q-page>
@@ -92,6 +92,7 @@
 <script>
 import { useRouter } from 'vue-router';
 import { ref } from 'vue';
+import axios from 'axios';
 
 export default {
   setup() {
@@ -107,8 +108,35 @@ export default {
     const state = ref('');
     const zip = ref('');
 
-    const goToLogin = () => {
-      router.push('/login');
+    const register = async () => {
+      if (password.value !== confirmPassword.value) {
+        alert('Passwords do not match.');
+        return;
+      }
+
+      try {
+        const response = await axios.post(
+          'http://localhost:3000/alunos/cadastro',
+          {
+            tipoConta: 'aluno', // ajustando conforme necessário
+            email: email.value,
+            senha: password.value,
+            nome: `${firstName.value} ${lastName.value}`,
+            curso: 'Curso Padrão', // Defina ou obtenha do usuário
+            cpf: 'CPF Padrão', // CPF deve ser único; pode solicitar no form
+            numero: phone.value,
+            endereco: `${address.value}, ${city.value}, ${state.value}, ${zip.value}`,
+            numeroEmergencia: 'Numero de Emergencia Padrão', // Ajuste conforme necessário
+          }
+        );
+
+        console.log('Cadastro realizado com sucesso:', response.data);
+        alert('Cadastro realizado com sucesso!');
+        router.push('/login');
+      } catch (error) {
+        console.error('Erro ao cadastrar:', error);
+        alert('Falha no cadastro');
+      }
     };
 
     const goBack = () => {
@@ -126,7 +154,7 @@ export default {
       city,
       state,
       zip,
-      goToLogin,
+      register,
       goBack,
     };
   },
