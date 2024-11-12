@@ -9,64 +9,19 @@
         <q-input
           filled
           v-model="email"
-          placeholder="Enter your e-mail..."
+          placeholder="E-mail"
           class="input-field"
           rounded
         />
         <q-input
           filled
-          v-model="firstName"
-          placeholder="First Name"
+          v-model="password"
+          type="password"
+          placeholder="Senha"
           class="input-field"
           rounded
         />
-        <q-input
-          filled
-          v-model="lastName"
-          placeholder="Last Name"
-          class="input-field"
-          rounded
-        />
-        <q-input
-          filled
-          v-model="phone"
-          placeholder="Phone Number"
-          class="input-field"
-          rounded
-        />
-        <q-input
-          filled
-          v-model="address"
-          placeholder="Address"
-          class="input-field"
-          rounded
-        />
-        <q-input
-          filled
-          v-model="city"
-          placeholder="City"
-          class="input-field"
-          rounded
-        />
-        <q-input
-          filled
-          v-model="state"
-          placeholder="State"
-          class="input-field"
-          rounded
-        />
-        <q-input
-          filled
-          v-model="zip"
-          placeholder="Zip Code"
-          class="input-field"
-          rounded
-        />
-        <q-btn
-          label="Validate Profile"
-          class="entrar"
-          @click="validateProfile"
-        />
+        <q-btn label="Login" class="entrar" @click="login" />
       </div>
     </div>
   </q-page>
@@ -80,33 +35,38 @@ export default {
   setup() {
     const router = useRouter();
     const email = ref('');
-    const firstName = ref('');
-    const lastName = ref('');
-    const phone = ref('');
-    const address = ref('');
-    const city = ref('');
-    const state = ref('');
-    const zip = ref('');
+    const password = ref('');
 
     const goBack = () => {
       router.go(-1);
     };
 
-    const validateProfile = () => {
-      router.push({ path: '/TelaValida' });
+    const login = async () => {
+      try {
+        const response = await fetch('http://localhost:3000/admin/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: email.value,  // Envia o email para o back-end
+            password: password.value, // Envia a senha para o back-end
+          }),
+        });
+
+        if (!response.ok) throw new Error('Login falhou');
+
+        const { token } = await response.json();
+        localStorage.setItem('adminToken', token); // Armazena o token localmente
+        router.push({ path: '/TelaAdm' });
+      } catch (error) {
+        alert('Login falhou: ' + error.message);
+      }
     };
 
     return {
       email,
-      firstName,
-      lastName,
-      phone,
-      address,
-      city,
-      state,
-      zip,
+      password,
       goBack,
-      validateProfile,
+      login,
     };
   },
 };

@@ -6,43 +6,76 @@
       :columns="columns"
       row-key="id"
       class="students-table"
-    >
-      <template v-slot:body-cell-upload="props">
-        <q-td :props="props">
+    />
+
+    <!-- Botão para adicionar novo aluno -->
+    <q-btn
+      label="Adicionar Novo Aluno"
+      color="primary"
+      @click="showAddStudentForm = true"
+      class="add-btn"
+    />
+
+    <!-- Formulário para adicionar novo aluno -->
+    <q-dialog v-model="showAddStudentForm">
+      <q-card>
+        <q-card-section>
+          <div class="text-h6">Novo Aluno</div>
+        </q-card-section>
+
+        <q-card-section>
+          <q-input v-model="newStudent.name" label="Nome" outlined />
+          <q-input v-model="newStudent.course" label="Curso" outlined />
+        </q-card-section>
+
+        <q-card-actions align="right">
           <q-btn
-            icon="cloud_upload"
-            color="primary"
-            @click="uploadBoleto(props.row)"
-            label="Upload Boleto"
-            class="rounded-btn"
+            flat
+            label="Cancelar"
+            color="negative"
+            @click="showAddStudentForm = false"
           />
-        </q-td>
-      </template>
-    </q-table>
-    <q-btn label="Adicionar Aluno" @click="addStudent" />
+          <q-btn flat label="Adicionar" color="primary" @click="addStudent" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
   </div>
 </template>
 
 <script>
 export default {
+  name: 'StudentList',
   data() {
     return {
-      students: [],
+      students: [
+        { id: 1, name: 'João Silva', course: 'Engenharia' },
+        { id: 2, name: 'Maria Souza', course: 'Direito' },
+      ],
       columns: [
         { name: 'name', label: 'Nome', field: 'name', align: 'left' },
         { name: 'course', label: 'Curso', field: 'course', align: 'left' },
-        { name: 'upload', label: 'Upload Boleto', align: 'center' },
       ],
+      showAddStudentForm: false,
+      newStudent: {
+        name: '',
+        course: '',
+      },
     };
   },
   methods: {
-    uploadBoleto(student) {
-      alert(`Fazer upload do boleto para: ${student.name}`);
-    },
     addStudent() {
-      // lógica para adicionar um novo aluno
-      alert('Adicionar um novo aluno');
+      // Gerar um novo ID para o aluno (no back-end, esse ID seria gerado automaticamente)
+      const newStudent = { ...this.newStudent, id: Date.now() };
+      this.students.push(newStudent);
+      this.showAddStudentForm = false;
+      this.newStudent = { name: '', course: '' }; // Limpar o formulário
     },
   },
 };
 </script>
+
+<style scoped>
+.add-btn {
+  margin-top: 10px;
+}
+</style>

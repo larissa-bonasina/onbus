@@ -2,65 +2,81 @@
   <div>
     <h2>Prestação de Contas</h2>
     <q-table
-      :rows="expenseRecords"
+      :rows="expenses"
       :columns="columns"
       row-key="id"
       class="expenses-table"
-    >
-      <template v-slot:body-cell-details="props">
-        <q-td :props="props">
-          <q-btn
-            label="Ver Detalhes"
-            @click="viewExpenseDetails(props.row)"
-            color="primary"
+    />
+
+    <q-btn
+      label="Adicionar Nova Despesa"
+      color="primary"
+      @click="showAddExpenseForm = true"
+      class="add-btn"
+    />
+
+    <q-dialog v-model="showAddExpenseForm">
+      <q-card>
+        <q-card-section>
+          <div class="text-h6">Nova Despesa</div>
+        </q-card-section>
+
+        <q-card-section>
+          <q-input
+            v-model="newExpense.description"
+            label="Descrição"
+            outlined
           />
-        </q-td>
-      </template>
-    </q-table>
-    <q-btn label="Adicionar Despesa" @click="addExpense" />
+          <q-input
+            v-model="newExpense.amount"
+            label="Valor"
+            outlined
+            type="number"
+          />
+        </q-card-section>
+
+        <q-card-actions align="right">
+          <q-btn flat label="Cancelar" color="negative" @click="showAddExpenseForm = false" />
+          <q-btn flat label="Adicionar" color="primary" @click="addExpense" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
   </div>
 </template>
 
 <script>
 export default {
+  name: 'ExpensesReport',
   data() {
     return {
-      expenseRecords: [
-        { id: 1, description: 'Gastos com combustível', amount: 200 },
-        { id: 2, description: 'Manutenção do ônibus', amount: 150 },
+      expenses: [
+        { id: 1, description: 'Transporte - Outubro', amount: 500 },
+        { id: 2, description: 'Manutenção', amount: 200 },
       ],
       columns: [
-        {
-          name: 'description',
-          label: 'Descrição',
-          field: 'description',
-          align: 'left',
-        },
-        {
-          name: 'amount',
-          label: 'Valor (R$)',
-          field: 'amount',
-          align: 'right',
-        },
-        { name: 'details', label: 'Ações', align: 'center' },
+        { name: 'description', label: 'Descrição', field: 'description', align: 'left' },
+        { name: 'amount', label: 'Valor (R$)', field: 'amount', align: 'left' },
       ],
+      showAddExpenseForm: false,
+      newExpense: {
+        description: '',
+        amount: null,
+      },
     };
   },
   methods: {
-    viewExpenseDetails(expense) {
-      // lógica para visualizar detalhes da despesa
-      alert(`Ver detalhes da despesa: ${expense.description}`);
-    },
     addExpense() {
-      // lógica para adicionar uma nova despesa
-      alert('Adicionar uma nova despesa');
+      const newRecord = { ...this.newExpense, id: Date.now() };
+      this.expenses.push(newRecord);
+      this.showAddExpenseForm = false;
+      this.newExpense = { description: '', amount: null };
     },
   },
 };
 </script>
 
 <style scoped>
-.expenses-table {
-  margin-top: 20px;
+.add-btn {
+  margin-top: 10px;
 }
 </style>
