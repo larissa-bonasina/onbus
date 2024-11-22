@@ -48,7 +48,7 @@ export default {
           'http://localhost:3000/alunos/login',
           {
             email: email.value,
-            senha: password.value, // certifique-se de que o nome do campo seja o mesmo no backend
+            senha: password.value,
           }
         );
 
@@ -106,7 +106,7 @@ export default {
   width: 80%;
   max-width: 300px;
   margin-top: 20px;
-  gap: 15px; /* Espaçamento entre os inputs */
+  gap: 15px;
 }
 
 .q-btn {
@@ -130,7 +130,7 @@ export default {
   width: 40%;
   max-width: 300px;
   margin-top: 30px;
-  border-radius: 15px; /* Borda mais arredondada */
+  border-radius: 15px;
 }
 
 .back-button {

@@ -38,7 +38,7 @@ export default {
   name: 'AdminPage',
   data() {
     return {
-      currentSection: 'attendance', // seção inicial
+      currentSection: 'attendance',
     };
   },
   computed: {
@@ -52,7 +52,7 @@ export default {
   },
   methods: {
     selectSection(section) {
-      this.currentSection = section; // altera a seção atual
+      this.currentSection = section;
     },
   },
 };

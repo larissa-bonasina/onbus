@@ -8,7 +8,6 @@
       class="students-table"
     />
 
-    <!-- Botão para adicionar novo aluno -->
     <q-btn
       label="Adicionar Novo Aluno"
       color="primary"
@@ -16,7 +15,6 @@
       class="add-btn"
     />
 
-    <!-- Formulário para adicionar novo aluno -->
     <q-dialog v-model="showAddStudentForm">
       <q-card>
         <q-card-section>
@@ -64,11 +62,10 @@ export default {
   },
   methods: {
     addStudent() {
-      // Gerar um novo ID para o aluno (no back-end, esse ID seria gerado automaticamente)
       const newStudent = { ...this.newStudent, id: Date.now() };
       this.students.push(newStudent);
       this.showAddStudentForm = false;
-      this.newStudent = { name: '', course: '' }; // Limpar o formulário
+      this.newStudent = { name: '', course: '' };
     },
   },
 };

@@ -1,6 +1,7 @@
 <template>
   <q-page>
     <div class="page-container">
+      <!-- Logo e imagem do ônibus -->
       <div class="top-section">
         <div class="logo-container">
           <img src="src/assets/logo.png" alt="App Logo" />
@@ -8,21 +9,27 @@
         <div class="bus-container">
           <img
             src="src/assets/freepik--Bus--inject-5.png"
-            alt="onibus"
-            style="height: 90%; width: 100%; border-top: 10px"
+            alt="Ônibus"
+            style="object-fit: contain"
           />
         </div>
       </div>
+
+      <!-- Seção azul com texto e botões -->
       <div class="blue-square">
         <div class="content-wrapper">
-          <p class="square-text1">Bem vindo!</p>
+          <p class="square-text1">Bem-vindo!</p>
           <p class="square-text2">
             OnBus, o aplicativo de controle para universitários intermunicipais!
           </p>
         </div>
+
+        <!-- Botões -->
         <div class="button-container">
-          <q-btn label="Login" class="login-btn" @click="goToLogin" />
-          <q-btn label="Signup" class="signup-btn" @click="goToSignup" />
+          <div class="horizontal-buttons">
+            <q-btn label="Login" class="login-btn" @click="goToLogin" />
+            <q-btn label="Cadastro" class="signup-btn" @click="goToSignup" />
+          </div>
           <q-btn
             label="Adm Associados"
             class="adm-btn"
@@ -66,78 +73,82 @@ export default {
 .page-container {
   display: flex;
   flex-direction: column;
-  align-items: center;
   justify-content: space-between;
   height: 100vh;
   background-color: #ffffff;
-  text-align: center;
+  padding: 5px 0;
 }
 
 .top-section {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-bottom: 20px;
+  margin-top: 2%;
 }
 
 .logo-container img {
-  width: 50vw;
-  max-width: 250px;
+  width: 30vw; 
+  max-width: 150px;
   height: auto;
 }
 
 .bus-container img {
-  width: 30vw;
-  max-width: 200px;
+  width: 50vw;
+  max-width: 250px;
   height: auto;
-  margin-top: 20px;
+  margin-top: 10px;
 }
 
 .blue-square {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  width: 100%;
+  align-items: center;
   background-color: #1b24ff;
-  padding: 20px;
-  height: 40vh;
+  padding: 10px 5%;
+  height: auto;
   box-sizing: border-box;
+  border-radius: 25px 25px 0 0;
+  margin-top: 5px;
 }
 
 .content-wrapper {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
+  text-align: center;
+  margin-bottom: 10px;
 }
 
 .square-text1 {
-  margin: 0;
-  font-size: 2em;
+  font-size: clamp(1.3em, 2vw, 2em);
   color: #ffffff;
-  font-family: sans-serif;
+  margin: 5px 0;
 }
 
 .square-text2 {
-  margin-top: 10px;
-  font-size: 1.2em;
+  font-size: clamp(0.9em, 1.2vw, 1.1em);
   color: #f0f0f0;
-  font-family: sans-serif;
-  text-align: left;
 }
 
 .button-container {
   display: flex;
-  justify-content: space-around;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  gap: 15px;
+}
+
+.horizontal-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
   width: 100%;
 }
 
 .login-btn,
 .signup-btn,
 .adm-btn {
-  margin: 0 10px;
   border-radius: 25px;
-  padding: 15px 30px;
-  font-size: 1em;
+  padding: 12px 20px;
+  font-size: clamp(1em, 1.2vw, 1.1em);
+  max-width: 160px;
 }
 
 .login-btn {
@@ -148,10 +159,14 @@ export default {
 .signup-btn {
   background-color: #ffffff;
   color: #1d1a1a;
+  border: 2px solid #1d1a1a;
 }
 
 .adm-btn {
   background-color: #354aff;
   color: #ffffff;
+  width: 80%;
+  text-align: center;
 }
 </style>
+

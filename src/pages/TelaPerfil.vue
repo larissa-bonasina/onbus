@@ -51,7 +51,6 @@
         <div class="info-item">
           <span class="info-label">Senha:</span>
           <span class="info-value">*********</span>
-          <!-- Mostrando senha como asteriscos -->
         </div>
 
         <!-- Botões -->

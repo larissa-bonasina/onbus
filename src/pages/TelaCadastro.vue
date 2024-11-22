@@ -118,15 +118,15 @@ export default {
         const response = await axios.post(
           'http://localhost:3000/alunos/cadastro',
           {
-            tipoConta: 'aluno', // ajustando conforme necessário
+            tipoConta: 'aluno',
             email: email.value,
             senha: password.value,
             nome: `${firstName.value} ${lastName.value}`,
-            curso: 'Curso Padrão', // Defina ou obtenha do usuário
-            cpf: 'CPF Padrão', // CPF deve ser único; pode solicitar no form
+            curso: 'Curso Padrão',
+            cpf: 'CPF Padrão',
             numero: phone.value,
             endereco: `${address.value}, ${city.value}, ${state.value}, ${zip.value}`,
-            numeroEmergencia: 'Numero de Emergencia Padrão', // Ajuste conforme necessário
+            numeroEmergencia: 'Numero de Emergencia Padrão',
           }
         );
 

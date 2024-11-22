@@ -47,15 +47,15 @@ export default {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            email: email.value,  // Envia o email para o back-end
-            password: password.value, // Envia a senha para o back-end
+            email: email.value,
+            password: password.value,
           }),
         });
 
         if (!response.ok) throw new Error('Login falhou');
 
         const { token } = await response.json();
-        localStorage.setItem('adminToken', token); // Armazena o token localmente
+        localStorage.setItem('adminToken', token);
         router.push({ path: '/TelaAdm' });
       } catch (error) {
         alert('Login falhou: ' + error.message);
