@@ -87,7 +87,7 @@ export default {
 }
 
 .logo-container img {
-  width: 30vw; 
+  width: 30vw;
   max-width: 150px;
   height: auto;
 }
@@ -159,7 +159,6 @@ export default {
 .signup-btn {
   background-color: #ffffff;
   color: #1d1a1a;
-  border: 2px solid #1d1a1a;
 }
 
 .adm-btn {

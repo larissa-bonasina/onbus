@@ -1,5 +1,8 @@
 <template>
   <q-page class="custom-page">
+    <div class="image-container">
+      <img src="../assets/school bus-rafiki 1.png" alt="School Bus" class="school-bus-image" />
+    </div>
     <div class="page-container">
       <div class="back-button">
         <q-icon name="arrow_back" size="24px" @click="goBack" />
@@ -74,8 +77,21 @@ export default {
 
 <style scoped>
 .custom-page {
-  background-color: rgba(230, 228, 245, 1);
+  background-color: #354aff;
   min-height: 100vh;
+}
+
+.image-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: -30px;
+  z-index: 2;
+}
+
+.school-bus-image {
+  width: 200px;
+  height: auto;
+  margin-top: 5%;
 }
 
 .page-container {
@@ -86,6 +102,7 @@ export default {
   min-height: 100vh;
   text-align: center;
   padding: 40px;
+  z-index: 1;
 }
 
 .input-container {
@@ -95,18 +112,16 @@ export default {
   align-items: center;
   width: 100%;
   max-width: 600px;
-  margin-top: 20px;
+  margin-top: 60px;
 }
 
 .rectangle {
-  margin-top: 0%;
-  background-color: #354aff;
+  background-color: #ffffff;
   width: 100%;
-  height: 600px;
+  height: 310px;
   border-radius: 48px;
   position: absolute;
-  top: -30px;
-  z-index: 0;
+  top: -250px;
 }
 
 .input-field {
@@ -117,24 +132,29 @@ export default {
   margin-bottom: 10px;
   width: 90%;
   max-width: 400px;
-  z-index: 1;
+  position: relative;
+  top: -180px;
 }
 
 .entrar {
   background-color: #354aff;
   color: #ffffff;
   padding: 12px 24px;
-  margin-top: 20px;
+  margin-top: 10px;
   border-radius: 25px;
   width: 90%;
   max-width: 400px;
+  position: relative;
+  top: -155px;
 }
 
 .back-button {
+  color: #ffffff;
   position: absolute;
   top: 16px;
   left: 16px;
   cursor: pointer;
-  z-index: 2;
+  z-index: 3;
 }
 </style>
+

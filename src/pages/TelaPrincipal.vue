@@ -33,24 +33,18 @@
       <!-- Google Maps -->
       <div class="maps-container">
         <iframe
-          src="https://www.google.com.br/maps/@-12.284247,-55.3032913,14z?entry=ttu&g_ep=EgoyMDI0MTAyOS4wIKXMDSoASAFQAw%3D%3D"
+          src="https://www.google.com/maps?q=Vera,+MT&output=embed"
           width="100%"
           height="400"
           style="border-radius: 10px"
           allowfullscreen
           loading="lazy"
-          referrerpolicy="no-referrer-when-downgrade"
         ></iframe>
       </div>
 
-      <!-- Status de presença -->
+      <!-- Status do botão -->
       <div class="status-container">
-        <div class="status-label">STATUS:</div>
-        <div class="status-text">{{ attendanceStatus }}</div>
-      </div>
-      <div class="embarque-container">
-        <div class="embarque-label">EMBARQUE:</div>
-        <div class="embarque-text">{{ status }}</div>
+        <p class="status-text">Status: {{ status }}</p>
       </div>
 
       <!-- Slider -->
@@ -73,56 +67,10 @@
         </q-btn>
       </div>
 
-      <!-- Botões de ação -->
-      <div class="status-buttons">
-        <q-btn
-          v-if="status === 'INDEFINIDO' || status === 'CHECK OUT'"
-          class="comparecer-button"
-          unelevated
-          @click="doCheckin"
-        >
-          IREI COMPARECER
-        </q-btn>
-        <q-btn
-          v-if="status === 'INDEFINIDO' || status === 'CHECK IN'"
-          class="nao-comparecer-button"
-          outlined
-          @click="doCheckout"
-        >
-          NÃO IREI COMPARECER
-        </q-btn>
-      </div>
-
       <!-- Link para contato -->
       <a class="contact-link" href="https://wa.me/" target="_blank">
         ENTRAR EM CONTATO COM A ASSOCIAÇÃO
       </a>
-
-      <!-- Upload de boleto -->
-      <div class="upload-container">
-        <q-uploader
-          url="/api/upload-boleto"
-          :label="'Clique para enviar o boleto'"
-          color="primary"
-          no-thumbnails
-          :max-files="1"
-          :accept="['application/pdf', 'image/jpeg', 'image/png']"
-          v-model="boletoFile"
-          ref="uploader"
-        />
-        <div v-if="boletoFile">
-          <span>Arquivo selecionado: {{ boletoFile.name }}</span>
-        </div>
-
-        <!-- Botão de envio -->
-        <q-btn
-          v-if="boletoFile"
-          label="Enviar Boleto"
-          color="primary"
-          @click="handleFileUpload"
-          unelevated
-        />
-      </div>
     </section>
   </div>
 </template>
@@ -145,13 +93,11 @@ export default {
         { id: 9, label: 'Button 9', route: '/route9' },
         { id: 10, label: 'Button 10', route: '/route10' },
       ],
-      attendanceStatus: 'INDEFINIDO',
       status: 'INDEFINIDO',
       isDragging: false,
       buttonWidth: 40,
       containerWidth: 200,
       offsetX: 0,
-      boletoFile: null,
     };
   },
   methods: {
@@ -204,54 +150,8 @@ export default {
         this.offsetX = this.containerWidth - this.buttonWidth;
       }
     },
-    async doCheckin() {
-      try {
-        const response = await axios.post('/api/auth/checkin', {
-          cpf: '12345678900',
-          status: 'CHECK IN',
-        });
-        console.log('Check-in realizado com sucesso:', response.data);
-      } catch (error) {
-        console.error('Erro ao realizar check-in:', error);
-      }
-    },
-    async doCheckout() {
-      try {
-        const response = await axios.post('/api/auth/checkout', {
-          checkinId: 'checkinId_aqui',
-        });
-        console.log('Check-out realizado com sucesso:', response.data);
-      } catch (error) {
-        console.error('Erro ao realizar check-out:', error);
-      }
-    },
-    async handleFileUpload() {
-      if (this.boletoFile) {
-        try {
-          const formData = new FormData();
-          formData.append('boleto', this.boletoFile);
-
-          const response = await axios.post('/api/upload-boleto', formData, {
-            headers: {
-              'Content-Type': 'multipart/form-data',
-            },
-          });
-
-          console.log('Boleto enviado com sucesso:', response.data);
-        } catch (error) {
-          console.error('Erro ao enviar o boleto:', error);
-        }
-      }
-    },
     navigateTo(route) {
       this.$router.push(route);
-    },
-  },
-  computed: {
-    buttonStyle() {
-      return {
-        transform: `translateX(${this.offsetX}px)`,
-      };
     },
   },
 };
@@ -263,8 +163,7 @@ export default {
   justify-content: center;
   align-items: center;
   background-color: #354aff;
-  padding: 15px;
-  border-radius: 10px;
+  padding: 16px;
   margin-bottom: 20px;
 }
 
@@ -336,27 +235,21 @@ export default {
   margin-bottom: 20px;
 }
 
-.status-container,
-.embarque-container {
+.status-container {
+  text-align: left;
   margin-bottom: 20px;
 }
 
-.status-label,
-.embarque-label {
-  font-weight: bold;
-  font-size: 18px;
-}
-
-.status-text,
-.embarque-text {
+.status-text {
   font-size: 16px;
-  color: #333;
+  font-weight: normal;
+  color: #0d1132;
 }
 
 .slider-container {
   width: 200px;
   height: 40px;
-  background-color: #ddd;
+  background-color: #ddd2d2;
   border-radius: 20px;
   position: relative;
   overflow: hidden;
@@ -373,22 +266,12 @@ export default {
   left: 0;
 }
 
-.status-buttons {
-  margin-top: 20px;
-  display: flex;
-  justify-content: space-between;
-}
-
-.comparecer-button,
-.nao-comparecer-button {
-  width: 48%;
-}
-
 .contact-link {
   display: block;
   text-align: center;
   margin-top: 20px;
-  text-decoration: none;
   color: #354aff;
+  text-decoration: none;
+  font-size: 13px;
 }
 </style>
