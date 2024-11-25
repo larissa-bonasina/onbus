@@ -82,16 +82,12 @@ export default {
     return {
       isNavOpen: false,
       navButtons: [
-        { id: 1, label: 'Button 1', route: '/route1' },
-        { id: 2, label: 'Button 2', route: '/route2' },
-        { id: 3, label: 'Button 3', route: '/route3' },
-        { id: 4, label: 'Button 4', route: '/route4' },
-        { id: 5, label: 'Button 5', route: '/route5' },
-        { id: 6, label: 'Button 6', route: '/route6' },
-        { id: 7, label: 'Button 7', route: '/route7' },
-        { id: 8, label: 'Button 8', route: '/route8' },
-        { id: 9, label: 'Button 9', route: '/route9' },
-        { id: 10, label: 'Button 10', route: '/route10' },
+        { id: 1, label: 'Prestação de contas', route: '/route1' },
+        { id: 2, label: 'Notificações', route: '/route2' },
+        { id: 3, label: 'Boletos', route: '/route3' },
+        { id: 4, label: 'Avisos da associação', route: '/route4' },
+        { id: 5, label: 'Check-in', route: '/route5' },
+
       ],
       status: 'INDEFINIDO',
       isDragging: false,
@@ -225,6 +221,7 @@ export default {
 .nav-button {
   margin-bottom: 10px;
   width: 100%;
+  background-color: #fff
 }
 
 .content-container {
