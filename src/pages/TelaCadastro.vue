@@ -11,6 +11,7 @@
       </div>
       <div class="input-container">
         <div class="rectangle"></div>
+
         <q-input
           filled
           v-model="email"
@@ -78,11 +79,19 @@
         />
         <q-input
           filled
-          v-model="zip"
-          placeholder="Zip Code"
+          v-model="CPF"
+          placeholder="CPF"
           class="input-field"
           rounded
         />
+        <q-input
+          filled
+          v-model="curso"
+          placeholder="Curso"
+          class="input-field"
+          rounded
+        />
+
         <q-btn label="Signup" class="entrar" @click="register" />
       </div>
     </div>
@@ -106,7 +115,8 @@ export default {
     const address = ref('');
     const city = ref('');
     const state = ref('');
-    const zip = ref('');
+    const CPF = ref('');
+    const curso = ref('');
 
     const register = async () => {
       if (password.value !== confirmPassword.value) {
@@ -115,20 +125,16 @@ export default {
       }
 
       try {
-        const response = await axios.post(
-          'http://localhost:3000/alunos/cadastro',
-          {
-            tipoConta: 'aluno',
-            email: email.value,
-            senha: password.value,
-            nome: `${firstName.value} ${lastName.value}`,
-            curso: 'Curso Padrão',
-            cpf: 'CPF Padrão',
-            numero: phone.value,
-            endereco: `${address.value}, ${city.value}, ${state.value}, ${zip.value}`,
-            numeroEmergencia: 'Numero de Emergencia Padrão',
-          }
-        );
+        const response = await axios.post('http://localhost:3000/alunos/cadastro', {
+          tipoConta: 'aluno',
+          email: email.value,
+          senha: password.value,
+          nome: `${firstName.value} ${lastName.value}`,
+          curso: curso.value,
+          cpf: CPF.value,
+          numero: phone.value,
+          endereco: `${address.value}, ${city.value}, ${state.value}`,
+        });
 
         console.log('Cadastro realizado com sucesso:', response.data);
         alert('Cadastro realizado com sucesso!');
@@ -153,7 +159,8 @@ export default {
       address,
       city,
       state,
-      zip,
+      CPF,
+      curso,
       register,
       goBack,
     };
@@ -206,7 +213,7 @@ export default {
   margin-top: 0%;
   background-color: #354aff;
   width: 85%;
-  height: 600px;
+  height: 680px;
   border-radius: 48px;
   position: absolute;
   top: -30px;
@@ -230,8 +237,8 @@ export default {
 }
 
 .entrar {
-  background-color: #354aff;
-  color: #ffffff;
+  background-color: #ffffff;
+  color: #000000;
   padding: 10px 20px;
   margin-top: 20px;
   border-radius: 25px;

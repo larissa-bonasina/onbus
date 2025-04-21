@@ -76,54 +76,60 @@ export default {
   justify-content: space-between;
   height: 100vh;
   background-color: #ffffff;
-  padding: 5px 0;
 }
 
 .top-section {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-top: 2%;
+  justify-content: flex-start;
+  padding-top: 40px;
+  padding-bottom: 20px;
+  position: relative; /* Para permitir o posicionamento absoluto do ônibus */
 }
 
 .logo-container img {
-  width: 30vw;
-  max-width: 150px;
+  width: 50vw;
+  max-width: 350px;
   height: auto;
+  margin-top: 200px;
+}
+
+.bus-container {
+  position: absolute;
+  top: 515px; /* Ajusta a posição do ônibus acima */
+  right: 5%;  /* Ajusta a posição do ônibus no lado direito */
+  z-index: 1; /* Garante que o ônibus fique acima do container azul */
 }
 
 .bus-container img {
-  width: 50vw;
-  max-width: 250px;
+  width: 40vw;  /* Ajuste o tamanho do ônibus conforme necessário */
+  max-width: 200px; /* Define um limite de tamanho máximo */
   height: auto;
-  margin-top: 10px;
 }
 
 .blue-square {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
   background-color: #1b24ff;
-  padding: 10px 5%;
-  height: auto;
-  box-sizing: border-box;
+  padding: 25px 5% 30px 5%;
   border-radius: 25px 25px 0 0;
-  margin-top: 5px;
+  box-sizing: border-box;
+  color: white;
+  width: 100%;
 }
 
 .content-wrapper {
   text-align: center;
-  margin-bottom: 10px;
+  margin-bottom: 15px;
 }
 
 .square-text1 {
-  font-size: clamp(1.3em, 2vw, 2em);
-  color: #ffffff;
+  font-size: clamp(1.5em, 2.5vw, 2.2em);
   margin: 5px 0;
+  color: #ffffff;
 }
 
 .square-text2 {
-  font-size: clamp(0.9em, 1.2vw, 1.1em);
+  font-size: clamp(1em, 1.5vw, 1.3em);
   color: #f0f0f0;
 }
 
@@ -133,6 +139,7 @@ export default {
   align-items: center;
   width: 100%;
   gap: 15px;
+  margin-top: 20px;
 }
 
 .horizontal-buttons {
@@ -167,5 +174,5 @@ export default {
   width: 80%;
   text-align: center;
 }
-</style>
 
+</style>

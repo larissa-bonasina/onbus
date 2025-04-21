@@ -10,11 +10,11 @@
         <!-- Nome Completo -->
         <div v-if="!isEditing" class="info-item">
           <span class="info-label">Nome Completo:</span>
-          <span class="info-value">{{ profile.fullName }}</span>
+          <span class="info-value">{{ profile.nome }}</span>
         </div>
         <div v-if="isEditing" class="info-item">
           <span class="info-label">Nome Completo:</span>
-          <input v-model="editedProfile.fullName" class="edit-input" />
+          <input v-model="editedProfile.nome" class="edit-input" />
         </div>
 
         <!-- CPF -->
@@ -24,7 +24,7 @@
         </div>
         <div v-if="isEditing" class="info-item">
           <span class="info-label">CPF:</span>
-          <input v-model="editedProfile.cpf" class="edit-input" />
+          <input v-model="editedProfile.cpf" class="edit-input" disabled />
         </div>
 
         <!-- Email -->
@@ -40,18 +40,13 @@
         <!-- Contato -->
         <div v-if="!isEditing" class="info-item">
           <span class="info-label">Contato:</span>
-          <span class="info-value">{{ profile.contact }}</span>
+          <span class="info-value">{{ profile.numero }}</span>
         </div>
         <div v-if="isEditing" class="info-item">
           <span class="info-label">Contato:</span>
-          <input v-model="editedProfile.contact" class="edit-input" />
+          <input v-model="editedProfile.numero" class="edit-input" />
         </div>
 
-        <!-- Senha -->
-        <div class="info-item">
-          <span class="info-label">Senha:</span>
-          <span class="info-value">*********</span>
-        </div>
 
         <!-- Botões -->
         <div class="alterar-button-container">
@@ -89,22 +84,27 @@ export default {
   data() {
     return {
       profile: {
-        fullName: 'Maria da Silva',
-        cpf: '123.456.789-00',
-        email: 'maria.silva@example.com',
-        contact: '(11) 99999-9999',
-        password: 'senha123',
-      },
-      editedProfile: {
-        fullName: '',
+        nome: '',
         cpf: '',
         email: '',
-        contact: '',
+        numero: '',
+      },
+      editedProfile: {
+        nome: '',
+        cpf: '',
+        email: '',
+        numero: '',
       },
       isEditing: false,
     };
   },
   methods: {
+    fetchProfile() {
+      const aluno = JSON.parse(localStorage.getItem('aluno'));
+      if (aluno) {
+        this.profile = aluno;  // Carrega as informações do aluno
+      }
+    },
     editProfile() {
       this.isEditing = true;
       this.editedProfile = { ...this.profile };
@@ -120,10 +120,13 @@ export default {
       this.$router.go(-1);
     },
   },
+  mounted() {
+    this.fetchProfile();  // Carrega os dados do aluno quando a página é montada
+  },
 };
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 .profile-page {
   background-color: #e0e0e0;
   display: flex;

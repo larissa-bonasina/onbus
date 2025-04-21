@@ -43,21 +43,29 @@ export default {
     const password = ref('');
 
     const login = async () => {
-      try {
-        const response = await axios.post(
-          'http://localhost:3000/alunos/login',
-          {
-            email: email.value,
-            senha: password.value,
-          }
-        );
+      if (!email.value || !password.value) {
+        alert('Por favor, insira seu e-mail e senha.');
+        return;
+      }
 
-        console.log('Login realizado com sucesso:', response.data);
-        alert('Login realizado com sucesso!');
-        router.push('/principal');
+      try {
+        const response = await axios.post('http://localhost:3000/alunos/login', {
+          email: email.value,
+          senha: password.value,
+        });
+
+        if (response.data.success) {
+          alert('Login realizado com sucesso!');
+
+          localStorage.setItem('aluno', JSON.stringify(response.data.aluno));
+          
+          router.push('/principal');
+        } else {
+          alert(response.data.message || 'E-mail ou senha inválidos');
+        }
       } catch (error) {
-        console.error('Falha no login:', error);
-        alert('E-mail ou senha inválidos');
+        console.error('Erro ao realizar login:', error);
+        alert('Erro ao realizar login. Tente novamente mais tarde.');
       }
     };
 
