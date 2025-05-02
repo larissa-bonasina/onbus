@@ -43,7 +43,7 @@
           src="https://www.google.com/maps?q=Vera,+MT&output=embed"
           width="100%"
           height="400"
-          style="border-radius: 12px"
+          style="border-radius: 10px"
           allowfullscreen
           loading="lazy"
         ></iframe>
@@ -83,84 +83,79 @@
 </template>
 
 <script>
-export default {
+import { defineComponent, onMounted, ref } from 'vue';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+
+export default defineComponent({
   name: 'IndexPage',
-  data() {
+  setup() {
+    const isNavOpen = ref(false);
+    const status = ref('INDEFINIDO');
+    const map = ref(null);
+    const routeLayer = ref(null);
+    const points = ref([]);
+
+    const navButtons = [
+      { id: 1, label: 'Prestação de contas', route: '/route1' },
+      { id: 2, label: 'Notificações', route: '/route2' },
+      { id: 3, label: 'Boletos', route: '/route3' },
+      { id: 4, label: 'Avisos da associação', route: '/route4' },
+      { id: 5, label: 'Check-in', route: '/route5' },
+    ];
+
+    const toggleNav = () => {
+      isNavOpen.value = !isNavOpen.value;
+    };
+
+    const navigateTo = (route) => {
+      window.location.href = route;
+    };
+
+    onMounted(() => {
+      // Inicializa o mapa
+      map.value = L.map('map').setView([-15.78, -47.93], 13); // Exemplo: Brasília
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors',
+      }).addTo(map.value);
+
+      // Adiciona clique para marcar pontos e desenhar rotas
+      map.value.on('click', (e) => {
+        const { lat, lng } = e.latlng;
+        points.value.push([lat, lng]);
+
+        L.marker([lat, lng]).addTo(map.value)
+          .bindPopup(`Ponto (${lat.toFixed(5)}, ${lng.toFixed(5)})`)
+          .openPopup();
+
+        if (points.value.length > 1) {
+          if (routeLayer.value) {
+            map.value.removeLayer(routeLayer.value);
+          }
+
+          routeLayer.value = L.polyline(points.value, { color: 'blue' }).addTo(map.value);
+        }
+      });
+    });
+
+    const clearRoutes = () => {
+      if (routeLayer.value) {
+        map.value.removeLayer(routeLayer.value);
+        routeLayer.value = null;
+      }
+      points.value = [];
+    };
+
     return {
-      isNavOpen: false,
-      navButtons: [
-        { id: 1, label: 'Prestação de contas', route: '/route1' },
-        { id: 2, label: 'Notificações', route: '/route2' },
-        { id: 3, label: 'Boletos', route: '/route3' },
-        { id: 4, label: 'Avisos da associação', route: '/route4' },
-        { id: 5, label: 'Check-in', route: '/route5' },
-      ],
-      status: 'INDEFINIDO',
-      isDragging: false,
-      buttonWidth: 40,
-      containerWidth: 200,
-      offsetX: 0,
+      isNavOpen,
+      navButtons,
+      status,
+      toggleNav,
+      navigateTo,
+      clearRoutes,
     };
   },
-  computed: {
-    buttonStyle() {
-      return {
-        transform: `translateX(${this.offsetX}px)`,
-        transition: this.isDragging ? 'none' : 'transform 0.3s ease',
-      };
-    },
-  },
-  methods: {
-    toggleNav() {
-      this.isNavOpen = !this.isNavOpen;
-    },
-    onButtonClick() {
-      if (this.status === 'CHECK IN') {
-        this.status = 'CHECK OUT';
-        this.offsetX = 0;
-      } else if (this.status === 'CHECK OUT') {
-        this.status = 'INDEFINIDO';
-        this.offsetX = this.containerWidth / 2 - this.buttonWidth / 2;
-      } else {
-        this.status = 'CHECK IN';
-        this.offsetX = this.containerWidth - this.buttonWidth;
-      }
-    },
-    startDrag() {
-      this.isDragging = true;
-    },
-    drag(event) {
-      if (this.isDragging) {
-        const container = this.$refs.sliderContainer.getBoundingClientRect();
-        let newPosition = event.clientX - container.left - this.buttonWidth / 2;
-
-        newPosition = Math.max(0, newPosition);
-        newPosition = Math.min(this.containerWidth - this.buttonWidth, newPosition);
-
-        this.offsetX = newPosition;
-      }
-    },
-    stopDrag() {
-      this.isDragging = false;
-      this.updateStatus();
-    },
-    updateStatus() {
-      if (this.offsetX < this.containerWidth / 3) {
-        this.status = 'CHECK OUT';
-        this.offsetX = 0;
-      } else if (this.offsetX < (this.containerWidth * 2) / 3) {
-        this.status = 'INDEFINIDO';
-        this.offsetX = this.containerWidth / 2 - this.buttonWidth / 2;
-      } else {
-        this.status = 'CHECK IN';
-        this.offsetX = this.containerWidth - this.buttonWidth;
-      }
-    },
-    navigateTo(route) {
-      this.$router.push(route);
-    },
-  },
-};
+});
 </script>
 
 <style scoped>
@@ -221,8 +216,7 @@ export default {
   height: 100%;
   background-color: #354aff;
   transition: right 0.3s ease-in-out;
-  z-index: 3;
-  padding-top: 60px;
+  z-index: 2; /* Mantém a barra de navegação sobre o mapa */
 }
 
 .nav-bar-open {
@@ -236,11 +230,7 @@ export default {
 .nav-button {
   margin-bottom: 12px;
   width: 100%;
-  background-color: #ffffff;
-  color: #3a3a3a;
-  font-weight: 600;
-  font-size: 14px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  background-color: #fff;
 }
 
 .content-container {
@@ -249,8 +239,16 @@ export default {
   margin: 0 auto;
 }
 
-.maps-container {
-  margin-bottom: 20px;
+.map-container {
+  width: 100%;
+  height: 400px;
+  border-radius: 10px;
+  position: relative;
+  z-index: 0;
+}
+
+.clear-route-button {
+  margin-top: 10px;
 }
 
 .status-container {
