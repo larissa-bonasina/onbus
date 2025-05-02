@@ -2,19 +2,25 @@
   <div>
     <!-- Cabeçalho -->
     <header class="header">
-      <q-icon name="account_circle" size="50px" class="profile-icon" />
+      <q-avatar size="50px" class="profile-icon bg-white text-primary">
+        <img src="https://cdn-icons-png.flaticon.com/512/2922/2922510.png" alt="admin fofo" />
+      </q-avatar>
       <a href="/perfil" class="username-link">Perfil do Estudante</a>
     </header>
 
-    <!-- Barra de navegação -->
+    <!-- Botão de menu (mobile) -->
     <div class="nav-toggle" @click="toggleNav">
-      <q-icon name="menu" size="24px" />
+      <q-icon name="menu" size="24px" color="white" />
     </div>
+
+    <!-- Fundo escuro ao abrir nav -->
     <div
       class="nav-backdrop"
       :class="{ 'nav-backdrop-open': isNavOpen }"
       @click="toggleNav"
     ></div>
+
+    <!-- Menu lateral -->
     <nav class="nav-bar" :class="{ 'nav-bar-open': isNavOpen }">
       <div class="nav-buttons">
         <q-btn
@@ -24,11 +30,12 @@
           class="nav-button"
           @click="navigateTo(button.route)"
           rounded
+          unelevated
         />
       </div>
     </nav>
 
-    <!-- Conteúdo Principal -->
+    <!-- Conteúdo principal -->
     <section class="content-container">
       <!-- Google Maps -->
       <div class="maps-container">
@@ -36,18 +43,18 @@
           src="https://www.google.com/maps?q=Vera,+MT&output=embed"
           width="100%"
           height="400"
-          style="border-radius: 10px"
+          style="border-radius: 12px"
           allowfullscreen
           loading="lazy"
         ></iframe>
       </div>
 
-      <!-- Status do botão -->
+      <!-- Status -->
       <div class="status-container">
         <p class="status-text">Status: {{ status }}</p>
       </div>
 
-      <!-- Slider -->
+      <!-- Slider interativo -->
       <div
         class="slider-container"
         @mousedown="startDrag"
@@ -67,7 +74,7 @@
         </q-btn>
       </div>
 
-      <!-- Link para contato -->
+      <!-- Link contato -->
       <a class="contact-link" href="https://wa.me/" target="_blank">
         ENTRAR EM CONTATO COM A ASSOCIAÇÃO
       </a>
@@ -87,7 +94,6 @@ export default {
         { id: 3, label: 'Boletos', route: '/route3' },
         { id: 4, label: 'Avisos da associação', route: '/route4' },
         { id: 5, label: 'Check-in', route: '/route5' },
-
       ],
       status: 'INDEFINIDO',
       isDragging: false,
@@ -95,6 +101,14 @@ export default {
       containerWidth: 200,
       offsetX: 0,
     };
+  },
+  computed: {
+    buttonStyle() {
+      return {
+        transform: `translateX(${this.offsetX}px)`,
+        transition: this.isDragging ? 'none' : 'transform 0.3s ease',
+      };
+    },
   },
   methods: {
     toggleNav() {
@@ -117,15 +131,11 @@ export default {
     },
     drag(event) {
       if (this.isDragging) {
-        const button = this.$refs.button;
-        const rect = button.getBoundingClientRect();
-        let newPosition = event.clientX - rect.left - this.buttonWidth / 2;
+        const container = this.$refs.sliderContainer.getBoundingClientRect();
+        let newPosition = event.clientX - container.left - this.buttonWidth / 2;
 
         newPosition = Math.max(0, newPosition);
-        newPosition = Math.min(
-          this.containerWidth - this.buttonWidth,
-          newPosition
-        );
+        newPosition = Math.min(this.containerWidth - this.buttonWidth, newPosition);
 
         this.offsetX = newPosition;
       }
@@ -164,14 +174,16 @@ export default {
 }
 
 .profile-icon {
-  color: #fff;
   margin-right: 10px;
+  border-radius: 50%;
+  overflow: hidden;
 }
 
 .username-link {
-  color: #fff;
+  color: #ffffff;
   font-size: 18px;
   text-decoration: none;
+  font-weight: bold;
 }
 
 .nav-toggle {
@@ -183,6 +195,7 @@ export default {
   position: absolute;
   top: 20px;
   right: 20px;
+  z-index: 3;
 }
 
 .nav-backdrop {
@@ -193,6 +206,7 @@ export default {
   width: 100%;
   height: 100%;
   background: rgba(0, 0, 0, 0.5);
+  z-index: 2;
 }
 
 .nav-backdrop-open {
@@ -207,7 +221,8 @@ export default {
   height: 100%;
   background-color: #354aff;
   transition: right 0.3s ease-in-out;
-  z-index: 1;
+  z-index: 3;
+  padding-top: 60px;
 }
 
 .nav-bar-open {
@@ -219,13 +234,19 @@ export default {
 }
 
 .nav-button {
-  margin-bottom: 10px;
+  margin-bottom: 12px;
   width: 100%;
-  background-color: #fff
+  background-color: #ffffff;
+  color: #3a3a3a;
+  font-weight: 600;
+  font-size: 14px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
 .content-container {
   padding: 20px;
+  max-width: 900px;
+  margin: 0 auto;
 }
 
 .maps-container {
@@ -233,42 +254,44 @@ export default {
 }
 
 .status-container {
-  text-align: left;
   margin-bottom: 20px;
 }
 
 .status-text {
   font-size: 16px;
-  font-weight: normal;
+  font-weight: 500;
   color: #0d1132;
 }
 
 .slider-container {
   width: 200px;
   height: 40px;
-  background-color: #ddd2d2;
+  background-color: #e2e2e2;
   border-radius: 20px;
   position: relative;
   overflow: hidden;
+  margin-bottom: 20px;
 }
 
 .slide-button {
   width: 40px;
   height: 40px;
   background-color: #354aff;
-  color: #fff;
+  color: #ffffff;
   border-radius: 50%;
   position: absolute;
   top: 0;
   left: 0;
+  transition: transform 0.3s ease;
 }
 
 .contact-link {
   display: block;
   text-align: center;
-  margin-top: 20px;
+  margin-top: 30px;
   color: #354aff;
   text-decoration: none;
-  font-size: 13px;
+  font-size: 14px;
+  font-weight: bold;
 }
 </style>
