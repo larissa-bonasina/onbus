@@ -6,6 +6,7 @@ import TelaPrincipal from 'src/pages/TelaPrincipal.vue';
 import TelaPerfil from 'src/pages/TelaPerfil.vue';
 import TelaAdm from 'src/pages/TelaAdm.vue';
 import ValidaAdm from 'src/pages/ValidaAdm.vue';
+import MonthlyFees from 'src/pages/MonthlyFees.vue';
 
 const routes: RouteRecordRaw[] = [
   {
@@ -35,6 +36,10 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/ValidaAdm',
     component: ValidaAdm,
+  },
+  {
+    path: '/mesalidade',
+    component: MonthlyFees,
   },
 ];
 
