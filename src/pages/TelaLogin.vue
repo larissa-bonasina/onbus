@@ -59,6 +59,8 @@ export default {
 
         if (response.status === 200 && response.data.token) {
           router.push('/principal');
+          localStorage.setItem('aluno', JSON.stringify(response.data.aluno));
+          
         } else {
           alert(response.data.message || 'E-mail ou senha inválidos');
         }

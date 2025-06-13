@@ -1,41 +1,56 @@
 <template>
-  <div>
-    <h2>Prestação de Contas</h2>
+  <div class="expenses-container">
+    <!-- Título -->
+    <h2 class="page-title">Prestação de Contas</h2>
+
+    <!-- Tabela de despesas -->
     <q-table
       :rows="expenses"
       :columns="columns"
       row-key="id"
-      class="expenses-table"
+      class="q-mt-md shadow-1 rounded-borders"
+      flat
+      bordered
     />
 
-    <q-btn
-      label="Adicionar Nova Despesa"
-      color="primary"
-      @click="showAddExpenseForm = true"
-      class="add-btn"
-    />
+    <!-- Botão de adicionar -->
+    <div class="q-mt-md flex justify-end">
+      <q-btn
+        label="Adicionar Nova Despesa"
+        color="primary"
+        @click="showAddExpenseForm = true"
+        rounded
+        unelevated
+        icon="add"
+        class="add-btn"
+      />
+    </div>
 
+    <!-- Formulário em modal -->
     <q-dialog v-model="showAddExpenseForm">
-      <q-card>
+      <q-card class="q-pa-md" style="min-width: 300px;">
         <q-card-section>
-          <div class="text-h6">Nova Despesa</div>
+          <div class="text-h6 text-primary">Nova Despesa</div>
         </q-card-section>
 
-        <q-card-section>
+        <q-card-section class="q-gutter-sm">
           <q-input
             v-model="newExpense.description"
             label="Descrição"
             outlined
+            dense
           />
           <q-input
             v-model="newExpense.amount"
-            label="Valor"
+            label="Valor (R$)"
             outlined
             type="number"
+            dense
+            prefix="R$"
           />
         </q-card-section>
 
-        <q-card-actions align="right">
+        <q-card-actions align="right" class="q-pt-none">
           <q-btn flat label="Cancelar" color="negative" @click="showAddExpenseForm = false" />
           <q-btn flat label="Adicionar" color="primary" @click="addExpense" />
         </q-card-actions>
@@ -76,7 +91,18 @@ export default {
 </script>
 
 <style scoped>
+.expenses-container {
+  padding: 20px;
+}
+
+.page-title {
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 20px;
+  color: #000000;
+}
+
 .add-btn {
-  margin-top: 10px;
+  min-width: 220px;
 }
 </style>
