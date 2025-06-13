@@ -49,16 +49,15 @@ export default {
       }
 
       try {
-        const response = await axios.post('http://localhost:3000/alunos/login', {
-          email: email.value,
-          senha: password.value,
-        });
+        const response = await axios.post(
+          'http://localhost:3000/alunos/login',
+          {
+            email: email.value,
+            senha: password.value,
+          }
+        );
 
-        if (response.data.success) {
-          alert('Login realizado com sucesso!');
-
-          localStorage.setItem('aluno', JSON.stringify(response.data.aluno));
-          
+        if (response.status === 200 && response.data.token) {
           router.push('/principal');
         } else {
           alert(response.data.message || 'E-mail ou senha inválidos');
@@ -69,16 +68,16 @@ export default {
       }
     };
 
+    const goBack = () => {
+      router.go(-1);
+    };
+
     return {
       email,
       password,
       login,
+      goBack,
     };
-  },
-  methods: {
-    goBack() {
-      this.$router.go(-1);
-    },
   },
 };
 </script>

@@ -84,12 +84,15 @@
 
 <script>
 import { defineComponent, onMounted, ref } from 'vue';
+import { useRouter } from 'vue-router'; // <-- ADICIONE ISSO
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
 export default defineComponent({
-  name: 'IndexPage',
+  name: 'TelaPrincipal',
   setup() {
+    const router = useRouter(); // <-- E ISSO
+
     const isNavOpen = ref(false);
     const status = ref('INDEFINIDO');
     const map = ref(null);
@@ -109,17 +112,15 @@ export default defineComponent({
     };
 
     const navigateTo = (route) => {
-      window.location.href = route;
+      router.push(route);
     };
 
     onMounted(() => {
-      // Inicializa o mapa
-      map.value = L.map('map').setView([-15.78, -47.93], 13); // Exemplo: Brasília
+      map.value = L.map('map').setView([-15.78, -47.93], 13);
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; OpenStreetMap contributors',
       }).addTo(map.value);
 
-      // Adiciona clique para marcar pontos e desenhar rotas
       map.value.on('click', (e) => {
         const { lat, lng } = e.latlng;
         points.value.push([lat, lng]);
@@ -146,6 +147,7 @@ export default defineComponent({
       points.value = [];
     };
 
+
     return {
       isNavOpen,
       navButtons,
@@ -157,6 +159,8 @@ export default defineComponent({
   },
 });
 </script>
+
+
 
 <style scoped>
 .header {
