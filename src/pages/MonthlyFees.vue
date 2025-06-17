@@ -142,8 +142,8 @@ export default {
         let message = '';
 
         if (student.status === 'Pago') {
-          subject = '⚠️ Mensalidade Vencida – Regularize e evite encargos!';
-          message = `Olá, ${student.name}!\n\nVerificamos que sua mensalidade no valor de R$ 165,67, com vencimento em 12/XX, ainda não foi paga.\n\n⚠️ Atenção: Após 5 dias úteis do vencimento, seu boleto será encaminhado para cartório, gerando custos adicionais.\n\nPor favor, regularize o pagamento o quanto antes para evitar transtornos.\n\nSe você já realizou o pagamento, por favor, desconsidere este aviso. Em caso de dúvidas, entre em contato conosco.\n\nAtenciosamente,\nAssociação dos Acadêmicos – Transporte Universitário`;
+          subject = '✅ Confirmação de Pagamento – Obrigado!';
+          message = `Olá, ${student.name}!\n\nConfirmamos o recebimento da sua mensalidade no valor de R$ 165,67.\n\nAgradecemos por estar em dia com sua contribuição. Desejamos bons estudos e um ótimo semestre!\n\nAtenciosamente,\nAssociação dos Acadêmicos – Transporte Universitário`;
         }
 
         if (student.status === 'Não Pago') {
@@ -154,14 +154,15 @@ export default {
         if (subject && message) {
           emailjs
             .send(
-              'service_0kvblay',
-              'template_2s0qjee',
+              'service_5rc8rok',
+              'template_yyj8gj3',
               {
                 to_name: student.name,
                 to_email: student.email,
                 subject: subject,
                 message: message,
-                from_email: 'gab541341@gmail.com',
+                from_name: 'ASSOCIAÇÃO DE ACADEMICOS',
+                reply_to: 'ALUNO ASSICIADO',
               },
               'V6evAzqbvFb1CWlwr'
             )

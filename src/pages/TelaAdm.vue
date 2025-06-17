@@ -23,6 +23,15 @@
           <q-item-section>{{ item.label }}</q-item-section>
         </q-item>
       </q-list>
+
+      <!-- BOTÃO DE SAIR -->
+      <q-btn
+        label="Sair"
+        icon="logout"
+        color="negative"
+        class="q-mt-xl full-width"
+        @click="logout"
+      />
     </aside>
 
     <main class="content-area">
@@ -67,6 +76,9 @@ export default {
   methods: {
     selectSection(section) {
       this.currentSection = section;
+    },
+    logout() {
+      this.$router.push('/');
     },
   },
 };

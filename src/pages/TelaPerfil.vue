@@ -104,6 +104,7 @@ export default {
       if (aluno) {
         this.profile = aluno;  // Carrega as informações do aluno
       }
+
     },
     editProfile() {
       this.isEditing = true;

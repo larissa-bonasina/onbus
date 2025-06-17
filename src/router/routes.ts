@@ -38,9 +38,9 @@ const routes: RouteRecordRaw[] = [
     component: ValidaAdm,
   },
   {
-    path: '/mesalidade',
+    path:'/mensalidades',
     component: MonthlyFees,
-  },
+  }
 ];
 
 export default routes;
