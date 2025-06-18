@@ -20,6 +20,7 @@
                 v-model="selectedDate"
                 mask="DD/MM/YYYY"
                 default-view="Calendar"
+                @input="filtrarPorData"
               />
             </q-popup-proxy>
           </q-icon>
@@ -32,8 +33,8 @@
       <q-card-section>
         <q-list bordered separator>
           <q-expansion-item
-            v-for="(student, index) in students"
-            :key="index"
+            v-for="(boleto) in boletosFiltrados"
+            :key="boleto.id"
             expand-separator
             header-class="student-header"
           >
@@ -41,34 +42,30 @@
               <q-item-section avatar>
                 <div
                   class="status-dot"
-                  :style="{ backgroundColor: getStatusColor(student.status) }"
+                  :style="{ backgroundColor: getStatusColor(boleto.status) }"
                 />
               </q-item-section>
               <q-item-section>
-                {{ student.name }}
+                {{ boleto.nome || boleto.aluno }} - Vencimento: {{ boleto.vencimento || 'N/A' }}
               </q-item-section>
             </template>
 
             <q-card class="q-pa-md">
               <div>
-                <strong>Email:</strong>
-                {{
-                  student.email.includes('gabrielialencar')
-                    ? student.email
-                    : '*****'
-                }}
+                <strong>Valor Mensalidade:</strong> R$ {{ formatValor(boleto.valor) }}
               </div>
             </q-card>
 
             <q-item>
               <q-item-section>
                 <q-select
-                  v-model="student.status"
+                  v-model="boleto.status"
                   :options="statusOptions"
                   dense
                   outlined
                   label="Status"
                   style="min-width: 160px"
+                  @update:model-value="atualizarStatus(boleto)"
                 />
               </q-item-section>
             </q-item>
@@ -91,64 +88,127 @@
 </template>
 
 <script>
-import emailjs from 'emailjs-com';
+import emailjs from 'emailjs-com'
+import axios from 'axios'
 
 export default {
   name: 'MonthlyFees',
   data() {
     return {
       selectedDate: '',
-      statusOptions: ['Pago', 'Processando', 'Não Pago'],
-      students: [
-        { name: 'João Silva', email: 'joao@email.com', status: 'Processando' },
-        {
-          name: 'Maria Oliveira',
-          email: 'maria@email.com',
-          status: 'Processando',
-        },
-        {
-          name: 'Carlos Souza',
-          email: 'carlos@email.com',
-          status: 'Processando',
-        },
-        {
-          name: 'Gabrieli Alencar',
-          email: 'gabrielialencar84@gmail.com',
-          status: 'Processando',
-        },
-      ],
-    };
+      statusOptions: ['Pago', 'Não Pago', 'Em aberto'],
+      boletos: [],
+      boletosFiltrados: [],
+      mapaAlunos: {}, // Mapa CPF -> Nome dos alunos
+      isUnmounted: false,
+    }
   },
   methods: {
+    formatValor(valor) {
+      const num = Number(valor)
+      if (isNaN(num)) return '0,00'
+      return num.toFixed(2).replace('.', ',')
+    },
+
     getStatusColor(status) {
-      switch (status) {
-        case 'Pago':
-          return 'green';
-        case 'Processando':
-          return 'gold';
-        case 'Não Pago':
-          return 'red';
+      switch (status.toLowerCase()) {
+        case 'pago':
+          return 'green'
+       case 'em aberto':
+          return 'gold'
+        case 'não pago':
+          return 'red'
         default:
-          return 'gray';
+          return 'gray'
       }
     },
+
+    async fetchAlunos() {
+      try {
+        const response = await axios.get('http://localhost:3000/alunos') // Ajuste a URL para seu backend
+        this.mapaAlunos = {}
+        response.data.forEach(aluno => {
+          this.mapaAlunos[aluno.cpf] = aluno.nome
+        })
+      } catch (error) {
+        console.error('Erro ao buscar alunos:', error)
+        this.mapaAlunos = {}
+      }
+    },
+
+    async fetchBoletos() {
+      try {
+        const response = await axios.get('http://localhost:3000/boletos')
+        if (this.isUnmounted) return
+
+        this.boletos = response.data.map(boleto => {
+          const nomeDoAluno = this.mapaAlunos[boleto.aluno] || boleto.aluno
+          return {
+            ...boleto,
+            valor: Number(boleto.valor) || 0,
+            status: boleto.status || 'Em aberto',
+            vencimento: boleto.vencimento || '',
+            aluno: boleto.aluno || 'Sem CPF',
+            nome: nomeDoAluno
+          }
+        })
+
+        this.boletosFiltrados = this.boletos
+      } catch (error) {
+        console.error('Erro ao buscar boletos:', error)
+        if (!this.isUnmounted) this.boletos = []
+      }
+    },
+
+    filtrarPorData() {
+      if (!this.selectedDate) {
+        this.boletosFiltrados = this.boletos
+        return
+      }
+
+      this.boletosFiltrados = this.boletos.filter(
+        boleto => boleto.vencimento === this.selectedDate
+      )
+    },
+
+    async atualizarStatus(boleto) {
+      console.log('Atualizando boleto:', boleto)
+      try {
+        await axios.put(`http://localhost:3000/boletos/${boleto.id}/status`, {
+          status: boleto.status
+        })
+
+        this.$q.notify({
+          type: 'positive',
+          message: `Status do boleto de ${boleto.nome} atualizado para "${boleto.status}".`
+        })
+      } catch (error) {
+        console.error('Erro ao atualizar status:', error)
+        this.$q.notify({
+          type: 'negative',
+          message: `Erro ao atualizar status do boleto de ${boleto.nome}.`
+        })
+      }
+    },
+
     notifyStudents() {
-      this.students.forEach((student) => {
-        if (student.status === 'Processando') {
-          return;
+      this.boletos.forEach(boleto => {
+        if (boleto.status.toLowerCase() === 'processando') return
+
+        let subject = ''
+        let message = ''
+
+        if (boleto.status.toLowerCase() === 'pago') {
+          subject = '✅ Confirmação de Pagamento – Obrigado!'
+          message = `Olá, aluno de CPF ${boleto.aluno}!\n\nConfirmamos o recebimento da sua mensalidade no valor de R$ ${this.formatValor(boleto.valor)}.\n\nAgradecemos por estar em dia com sua contribuição.\n\nAtenciosamente,\nAssociação dos Acadêmicos – Transporte Universitário`
         }
 
-        let subject = '';
-        let message = '';
-
-        if (student.status === 'Pago') {
-          subject = '✅ Confirmação de Pagamento – Obrigado!';
-          message = `Olá, ${student.name}!\n\nConfirmamos o recebimento da sua mensalidade no valor de R$ 165,67.\n\nAgradecemos por estar em dia com sua contribuição. Desejamos bons estudos e um ótimo semestre!\n\nAtenciosamente,\nAssociação dos Acadêmicos – Transporte Universitário`;
-        }
-
-        if (student.status === 'Não Pago') {
-          subject = '🚫 Aviso de Protesto – Mensalidade Não Paga';
-          message = `Olá, ${student.name},\n\nInformamos que, infelizmente, sua mensalidade no valor de R$ 165,67, com vencimento em 12/XX, não foi quitada dentro do prazo, e o boleto foi encaminhado para protesto em cartório, conforme previsto em nosso regulamento.\n\nPara regularizar sua situação, é necessário procurar diretamente o cartório, onde poderão ser aplicadas taxas adicionais referentes ao protesto.\n\nCaso haja algum erro ou você deseje resolver essa situação diretamente conosco, pedimos que entre em contato imediatamente.\n\nAtenciosamente,\nAssociação dos Acadêmicos – Transporte Universitário`;
+        if (
+          boleto.status.toLowerCase() === 'não pago' ||
+          boleto.status.toLowerCase() === 'em aberto'
+        ) {
+          subject = '🚫 Aviso de Protesto – Mensalidade Não Paga'
+          message = `Olá, aluno de CPF ${boleto.aluno},\n\nInformamos que sua mensalidade no valor de R$ ${this.formatValor(boleto.valor)}, com vencimento em ${boleto.vencimento}, não foi quitada dentro do prazo.\n\nPor favor, regularize a situação para evitar protesto.\n\nAtenciosamente,\nAssociação dos Acadêmicos – Transporte Universitário`
         }
 
         if (subject && message) {
@@ -157,34 +217,41 @@ export default {
               'service_5rc8rok',
               'template_yyj8gj3',
               {
-                to_name: student.name,
-                to_email: student.email,
-                subject: subject,
-                message: message,
+                to_name: `Aluno ${boleto.nome}`,
+                to_email: boleto.email || 'email@exemplo.com',
+                subject,
+                message,
                 from_name: 'ASSOCIAÇÃO DE ACADEMICOS',
-                reply_to: 'ALUNO ASSICIADO',
+                reply_to: 'associados@transporte.com'
               },
               'V6evAzqbvFb1CWlwr'
             )
             .then(() => {
               this.$q.notify({
                 type: 'positive',
-                message: `Email enviado para ${student.name} (${student.email})`,
-              });
+                message: `Email enviado para o aluno CPF ${boleto.aluno}`
+              })
             })
-            .catch((error) => {
+            .catch(error => {
               this.$q.notify({
                 type: 'negative',
-                message: `Erro ao enviar email para ${student.name}: ${
-                  error.text || error
-                }`,
-              });
-            });
+                message: `Erro ao enviar email para o aluno CPF ${boleto.aluno}: ${error.text || error}`
+              })
+            })
         }
-      });
-    },
+      })
+    }
   },
-};
+
+  async mounted() {
+    await this.fetchAlunos()
+    await this.fetchBoletos()
+  },
+
+  beforeUnmount() {
+    this.isUnmounted = true
+  }
+}
 </script>
 
 <style scoped>

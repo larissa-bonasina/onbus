@@ -1,82 +1,95 @@
 <template>
   <div>
     <h2>Lista de Presença</h2>
+
     <q-table
       :rows="attendanceRecords"
       :columns="columns"
-      row-key="id"
       class="attendance-table"
-    />
+    >
+      <template v-slot:body-cell-actions="props">
+        <q-td align="center">
+          <q-toggle
+            v-model="props.row.checkedIn"
+            @update:model-value="val => togglePresenca(val, props.row.cpf)"
+            color="green"
+            checked-icon="check"
+            unchecked-icon="close"
+          />
+        </q-td>
+      </template>
+    </q-table>
 
     <q-btn
-      label="Adicionar Novo Registro"
+      label="Atualizar Lista"
       color="primary"
-      @click="showAddAttendanceForm = true"
-      class="add-btn"
+      icon="refresh"
+      class="q-mt-md"
+      @click="fetchPresentes"
     />
-
-    <q-dialog v-model="showAddAttendanceForm">
-      <q-card>
-        <q-card-section>
-          <div class="text-h6">Novo Registro de Presença</div>
-        </q-card-section>
-
-        <q-card-section>
-          <q-input
-            v-model="newAttendance.studentName"
-            label="Nome do Aluno"
-            outlined
-          />
-          <q-input
-            v-model="newAttendance.date"
-            label="Data"
-            outlined
-            type="date"
-          />
-        </q-card-section>
-
-        <q-card-actions align="right">
-          <q-btn flat label="Cancelar" color="negative" @click="showAddAttendanceForm = false" />
-          <q-btn flat label="Adicionar" color="primary" @click="addAttendance" />
-        </q-card-actions>
-      </q-card>
-    </q-dialog>
   </div>
 </template>
 
 <script>
+import axios from 'axios';
+
 export default {
   name: 'AttendanceList',
   data() {
     return {
-      attendanceRecords: [
-        { id: 1, studentName: 'João Silva', date: '2024-10-01' },
-        { id: 2, studentName: 'Maria Souza', date: '2024-10-02' },
-      ],
+      attendanceRecords: [],
       columns: [
         { name: 'studentName', label: 'Nome do Aluno', field: 'studentName', align: 'left' },
-        { name: 'date', label: 'Data', field: 'date', align: 'left' },
+        { name: 'date', label: 'Data do Check-in', field: 'date', align: 'left' },
+        { name: 'checkinTime', label: 'Hora do Check-in', field: 'checkinTime', align: 'left' },
+        { name: 'actions', label: 'Presente', field: 'checkedIn', align: 'center' }
       ],
-      showAddAttendanceForm: false,
-      newAttendance: {
-        studentName: '',
-        date: '',
-      },
     };
   },
   methods: {
-    addAttendance() {
-      const newRecord = { ...this.newAttendance, id: Date.now() };
-      this.attendanceRecords.push(newRecord);
-      this.showAddAttendanceForm = false;
-      this.newAttendance = { studentName: '', date: '' };
+    async fetchPresentes() {
+      try {
+        const response = await axios.get('http://localhost:3000/checkin/presentes');
+        this.attendanceRecords = response.data.map((aluno, index) => {
+          const checkinDate = aluno.checkinTime?.seconds
+            ? new Date(aluno.checkinTime.seconds * 1000)
+            : new Date();
+
+          return {
+            id: index + 1,
+            studentName: aluno.nome || 'Desconhecido',
+
+            date: checkinDate.toISOString().substring(0, 10),
+            checkinTime: checkinDate.toLocaleTimeString(),
+            checkedIn: true
+          };
+        });
+      } catch (error) {
+        console.error('Erro ao buscar alunos presentes:', error);
+      }
     },
+
+    async togglePresenca(marcado, cpf) {
+      try {
+        if (marcado) {
+          await axios.post('/checkin/checkin', { cpf });
+        } else {
+          await axios.post('/checkin/checkout', { cpf });
+        }
+        this.fetchPresentes(); // Atualiza a tabela
+      } catch (error) {
+        console.error('Erro ao atualizar presença:', error);
+      }
+    }
   },
+  mounted() {
+    this.fetchPresentes();
+  }
 };
 </script>
 
 <style scoped>
-.add-btn {
-  margin-top: 10px;
+.attendance-table {
+  margin-top: 20px;
 }
 </style>
