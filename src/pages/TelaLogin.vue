@@ -34,7 +34,7 @@
 <script>
 import { useRouter } from 'vue-router';
 import { ref } from 'vue';
-import axios from 'axios';
+import { api } from 'boot/axios';
 
 export default {
   setup() {
@@ -49,24 +49,21 @@ export default {
       }
 
       try {
-        const response = await axios.post(
-          'http://localhost:3000/alunos/login',
-          {
-            email: email.value,
-            senha: password.value,
-          }
-        );
+        const response = await api.post('/alunos/login', {
+          email: email.value,
+          senha: password.value,
+        });
 
         if (response.status === 200 && response.data.token) {
-          router.push('/principal');
+          localStorage.setItem('token', response.data.token);
           localStorage.setItem('aluno', JSON.stringify(response.data.aluno));
-          
+          router.push('/principal');
         } else {
           alert(response.data.message || 'E-mail ou senha inválidos');
         }
       } catch (error) {
         console.error('Erro ao realizar login:', error);
-        alert('Erro ao realizar login. Tente novamente mais tarde.');
+        alert('E-mail ou senha inválidos.');
       }
     };
 

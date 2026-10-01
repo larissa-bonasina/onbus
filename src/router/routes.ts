@@ -6,13 +6,9 @@ import TelaPrincipal from 'src/pages/TelaPrincipal.vue';
 import TelaPerfil from 'src/pages/TelaPerfil.vue';
 import TelaAdm from 'src/pages/TelaAdm.vue';
 import ValidaAdm from 'src/pages/ValidaAdm.vue';
-<<<<<<< Updated upstream
-=======
-import MonthlyFees from 'src/pages/MonthlyFees.vue';
 import ExpensesReport from 'src/pages/ExpensesReport.vue';
 import Avisos from 'src/pages/Avisos.vue';
 import Boletos from 'src/pages/Boletos.vue';
->>>>>>> Stashed changes
 
 const routes: RouteRecordRaw[] = [
   {
@@ -30,37 +26,37 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/principal',
     component: TelaPrincipal,
+    meta: { requiresAuth: true },
   },
   {
     path: '/perfil',
     component: TelaPerfil,
+    meta: { requiresAuth: true },
   },
   {
     path: '/TelaAdm',
     component: TelaAdm,
+    meta: { requiresAuth: true, role: 'admin' },
   },
   {
     path: '/ValidaAdm',
     component: ValidaAdm,
   },
-<<<<<<< Updated upstream
-=======
-  {
-    path: '/mesalidade',
-    component: MonthlyFees,
-  },
   {
     path: '/prestacao',
     component: ExpensesReport,
+    meta: { requiresAuth: true },
   },
-  {path: '/avisos',
+  {
+    path: '/avisos',
     component: Avisos,
+    meta: { requiresAuth: true },
   },
-  {path: '/boletos',
+  {
+    path: '/boletos',
     component: Boletos,
+    meta: { requiresAuth: true },
   },
-
->>>>>>> Stashed changes
 ];
 
 export default routes;

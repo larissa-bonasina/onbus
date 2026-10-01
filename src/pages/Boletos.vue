@@ -61,7 +61,7 @@
 </template>
 
 <script>
-import axios from 'axios';
+import { api } from 'boot/axios';
 
 export default {
   name: 'BoletosAluno',
@@ -85,7 +85,7 @@ export default {
 
       const cpf = aluno.cpf;
       try {
-        const response = await axios.get(`http://localhost:3000/boletos/${cpf}`);
+        const response = await api.get(`/boletos/${cpf}`);
         this.boletos = Array.isArray(response.data) ? response.data : [response.data];
       } catch (error) {
         console.error('Erro ao buscar boletos:', error);

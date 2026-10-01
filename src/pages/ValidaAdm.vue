@@ -33,6 +33,7 @@
 <script>
 import { useRouter } from 'vue-router';
 import { ref } from 'vue';
+import { api } from 'boot/axios';
 
 export default {
   setup() {
@@ -46,22 +47,15 @@ export default {
 
     const login = async () => {
       try {
-        const response = await fetch('http://localhost:3000/admin/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            email: email.value,
-            password: password.value,
-          }),
+        const response = await api.post('/admin/login', {
+          email: email.value,
+          password: password.value,
         });
 
-        if (!response.ok) throw new Error('Login falhou');
-
-        const { token } = await response.json();
-        localStorage.setItem('adminToken', token);
+        localStorage.setItem('token', response.data.token);
         router.push({ path: '/TelaAdm' });
       } catch (error) {
-        alert('Login falhou: ' + error.message);
+        alert('Login falhou. Verifique o e-mail e a senha.');
       }
     };
 

@@ -28,6 +28,14 @@
           rounded
           unelevated
         />
+        <q-btn
+          label="Sair"
+          class="nav-button"
+          icon="logout"
+          @click="sair"
+          rounded
+          unelevated
+        />
       </div>
     </nav>
 
@@ -79,7 +87,8 @@
 <script>
 import { defineComponent, onMounted, ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
-import axios from 'axios';
+import { api } from 'boot/axios';
+import { logout } from 'src/utils/auth';
 
 export default defineComponent({
   name: 'TelaPrincipal',
@@ -103,6 +112,11 @@ export default defineComponent({
 
     const toggleNav = () => {
       isNavOpen.value = !isNavOpen.value;
+    };
+
+    const sair = () => {
+      logout();
+      router.push('/login');
     };
 
     const navigateTo = (route) => {
@@ -138,7 +152,7 @@ export default defineComponent({
   }
 
   try {
-    const response = await axios.post('http://localhost:3000/checkin/checkin', {
+    const response = await api.post('/checkin/checkin', {
       cpf: aluno.value.cpf,  // usa cpf aqui
     });
 
@@ -186,6 +200,7 @@ const stopDrag = async () => {
       status,
       toggleNav,
       navigateTo,
+      sair,
       sliderContainer,
       sliderPosition,
       isDragging,

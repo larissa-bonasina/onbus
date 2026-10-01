@@ -101,7 +101,7 @@
 <script>
 import { useRouter } from 'vue-router';
 import { ref } from 'vue';
-import axios from 'axios';
+import { api } from 'boot/axios';
 
 export default {
   setup() {
@@ -125,7 +125,7 @@ export default {
       }
 
       try {
-        const response = await axios.post('http://localhost:3000/alunos/cadastro', {
+        const response = await api.post('/alunos/cadastro', {
           tipoConta: 'aluno',
           email: email.value,
           senha: password.value,

@@ -6,6 +6,14 @@
           <img src="https://cdn-icons-png.flaticon.com/512/847/847969.png" />
         </q-avatar>
         <div class="username">Administrador</div>
+        <q-btn
+          label="Sair"
+          icon="logout"
+          flat
+          dense
+          class="q-mt-sm text-white"
+          @click="sair"
+        />
       </div>
 
       <q-list class="menu-list">
@@ -58,6 +66,7 @@
 <script>
 import AttendanceList from './AttendanceList.vue';
 import StudentsList from './StudentsList.vue';
+import { logout } from 'src/utils/auth';
 
 const MonthlyFees = {
   name: 'MonthlyFees',
@@ -189,6 +198,10 @@ export default {
   methods: {
     selectSection(section) {
       this.currentSection = section;
+    },
+    sair() {
+      logout();
+      this.$router.push('/ValidaAdm');
     },
   },
 };

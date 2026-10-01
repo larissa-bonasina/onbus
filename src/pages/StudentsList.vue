@@ -52,7 +52,7 @@
 </template>
 
 <script>
-import axios from 'axios';
+import { api } from 'boot/axios';
 
 export default {
   data() {
@@ -78,7 +78,7 @@ export default {
 
     async fetchStudents() {
       try {
-        const response = await axios.get('http://localhost:3000/alunos');
+        const response = await api.get('/alunos');
         this.students = response.data;
       } catch (error) {
         console.error('Erro ao buscar os alunos:', error);
@@ -115,15 +115,7 @@ export default {
   };
 
   try {
-    const response = await axios.post(
-      'http://localhost:3000/admin/gerar-boleto',
-      formData,
-      {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('adminToken')}`,
-        },
-      }
-    );
+    const response = await api.post('/admin/gerar-boleto', formData);
 
     if (response.status === 200) {
       alert('Boleto gerado com sucesso!');

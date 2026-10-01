@@ -1,0 +1,15 @@
+# Dependências
+node_modules/
+
+# Segredos — NUNCA versionar
+.env
+.env.*
+!.env.example
+firebaseServiceAccount.json
+*serviceAccount*.json
+
+# Logs e temporários
+*.log
+npm-debug.log*
+.DS_Store
+Thumbs.db
