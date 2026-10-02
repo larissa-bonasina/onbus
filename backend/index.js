@@ -69,6 +69,7 @@ app.use('/checkin', require('./routes/checkinRoutes'));
 app.use('/boletos', require('./routes/boletosRoutes'));
 app.use('/avisos', require('./routes/avisosRoutes'));
 app.use('/contas', require('./routes/contasRoutes'));
+app.use('/rotas', require('./routes/rotasRoutes'));
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

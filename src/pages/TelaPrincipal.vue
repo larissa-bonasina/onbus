@@ -1,6 +1,10 @@
 <template>
   <q-page class="home" :style-fn="fullHeight">
-    <RouteMap class="home__map" :embarque="ROTA.embarque" :destino="ROTA.destino" />
+    <RouteMap v-if="rota" class="home__map" :embarque="rota.embarque" :destino="rota.destino" />
+    <div v-else class="home__map home__map--vazio">
+      <q-spinner v-if="carregandoRota" color="primary" size="28px" />
+      <q-icon v-else name="sym_r_wrong_location" size="40px" />
+    </div>
 
     <header class="home__top">
       <router-link to="/perfil" class="greet" aria-label="Abrir perfil">
@@ -19,15 +23,26 @@
         <span v-if="confirmadoHoje" class="ob-chip ob-chip--ok">Presença confirmada</span>
         <span v-else class="ob-chip ob-chip--neutral">Presença não confirmada</span>
         <span class="ob-muted sheet__hint">
-          {{ confirmadoHoje ? `hoje às ${horaCheckin}` : 'para a viagem de hoje' }}
+          {{ confirmadoHoje ? `hoje às ${horaCheckin}` : rota && !rodaHoje(rota) ? 'hoje não tem viagem nesta rota' : 'para a viagem de hoje' }}
         </span>
       </div>
 
-      <h1 class="sheet__title">{{ ROTA.nome }}</h1>
-      <div class="sheet__meta">
-        <span><q-icon name="sym_r_trip_origin" size="16px" />Embarque: {{ ROTA.embarque.nome }}</span>
-        <span><q-icon name="sym_r_location_on" size="16px" />Destino: {{ ROTA.destino.nome }}</span>
-      </div>
+      <template v-if="rota">
+        <h1 class="sheet__title">{{ rota.nome }}</h1>
+        <div class="sheet__meta">
+          <span><q-icon name="sym_r_trip_origin" size="16px" />Embarque: {{ rota.embarque.nome }}</span>
+          <span><q-icon name="sym_r_location_on" size="16px" />Destino: {{ rota.destino.nome }}</span>
+          <span>
+            <q-icon name="sym_r_schedule" size="16px" />
+            Ida {{ rota.horarioIda }}<template v-if="rota.horarioVolta"> · Volta {{ rota.horarioVolta }}</template>
+            · {{ resumoDias(rota.dias) }}
+          </span>
+        </div>
+      </template>
+      <template v-else-if="!carregandoRota">
+        <h1 class="sheet__title">Sem rota definida</h1>
+        <p class="sheet__meta">A associação ainda não vinculou você a uma rota.</p>
+      </template>
 
       <div v-if="carregando" class="sheet__action">
         <q-skeleton type="QBtn" class="full-width" height="56px" style="border-radius: 999px" />
@@ -55,7 +70,7 @@ import { useQuasar } from 'quasar';
 import { api } from 'boot/axios';
 import SlideToConfirm from 'components/SlideToConfirm.vue';
 import RouteMap from 'components/RouteMap.vue';
-import { ROTA } from 'src/config/rota';
+import { resumoDias, rodaHoje, type Rota } from 'src/utils/rotas';
 import { iniciais as calcIniciais } from 'src/utils/format';
 
 interface Aluno {
@@ -68,6 +83,20 @@ const aluno: Aluno | null = JSON.parse(localStorage.getItem('aluno') || 'null');
 
 const primeiroNome = computed(() => aluno?.nome?.split(' ')[0] ?? 'estudante');
 const iniciais = computed(() => calcIniciais(aluno?.nome));
+
+// ---------- Rota ----------
+const rota = ref<Rota | null>(null);
+const carregandoRota = ref(true);
+
+async function carregarRota() {
+  try {
+    rota.value = (await api.get('/rotas/minha')).data;
+  } catch {
+    rota.value = null;
+  } finally {
+    carregandoRota.value = false;
+  }
+}
 
 // ---------- Presença ----------
 const carregando = ref(true);
@@ -113,7 +142,7 @@ async function confirmar() {
       type: 'positive',
       icon: 'sym_r_check_circle',
       message: 'Presença confirmada',
-      caption: `${ROTA.nome} · ${horaCheckin.value}`,
+      caption: rota.value ? `${rota.value.nome} · ${horaCheckin.value}` : horaCheckin.value,
     });
   } catch {
     slider.value?.reset();
@@ -146,7 +175,10 @@ function fullHeight(offset: number, height: number) {
   return { height: `${height - offset}px` };
 }
 
-onMounted(carregarPresenca);
+onMounted(() => {
+  carregarRota();
+  carregarPresenca();
+});
 </script>
 
 <style scoped>
@@ -162,6 +194,14 @@ onMounted(carregarPresenca);
   flex: 1;
   min-height: 220px;
   z-index: 0;
+}
+
+.home__map--vazio {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-bottom: 24px;
+  color: var(--ob-muted);
 }
 
 .home__top {

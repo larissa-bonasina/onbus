@@ -45,6 +45,7 @@ const routes: RouteRecordRaw[] = [
     children: [
       { path: '', component: () => import('pages/admin/AdminVisaoGeral.vue') },
       { path: 'presenca', component: () => import('pages/admin/AdminPresenca.vue') },
+      { path: 'rotas', component: () => import('pages/admin/AdminRotas.vue') },
       { path: 'alunos', component: () => import('pages/admin/AdminAlunos.vue') },
       { path: 'mensalidades', component: () => import('pages/admin/AdminMensalidades.vue') },
       { path: 'avisos', component: () => import('pages/admin/AdminAvisos.vue') },

@@ -54,6 +54,7 @@ const aberto = ref(false);
 const itens = [
   { to: '/admin', label: 'Visão geral', icon: 'sym_r_space_dashboard', exato: true },
   { to: '/admin/presenca', label: 'Presença', icon: 'sym_r_how_to_reg' },
+  { to: '/admin/rotas', label: 'Rotas', icon: 'sym_r_route' },
   { to: '/admin/alunos', label: 'Alunos', icon: 'sym_r_group' },
   { to: '/admin/mensalidades', label: 'Mensalidades', icon: 'sym_r_payments' },
   { to: '/admin/avisos', label: 'Avisos', icon: 'sym_r_campaign' },

@@ -32,6 +32,21 @@
             <span>{{ formatarCpf(a.cpf) }}</span>
             <span>{{ formatarTelefone(a.numero) }}</span>
           </span>
+          <q-select
+            v-if="rotas.length"
+            :model-value="a.rotaId ?? null"
+            :options="opcoesRota"
+            emit-value
+            map-options
+            dense
+            outlined
+            options-dense
+            :label="a.rotaId ? undefined : 'Sem rota'"
+            :aria-label="`Rota de ${a.nome}`"
+            :loading="vinculando === a.cpf"
+            class="rota-select"
+            @update:model-value="(v) => vincular(a, v)"
+          />
           <q-btn flat no-caps dense color="primary" icon="sym_r_receipt_long" label="Mensalidade" @click="abrirGerar(a)">
             <q-tooltip>Gerar mensalidade para {{ a.nome.split(' ')[0] }}</q-tooltip>
           </q-btn>
@@ -49,11 +64,43 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
-import { useAlunos, AlunoAdmin } from 'src/composables/useAdminData';
+import { useQuasar } from 'quasar';
+import { api } from 'boot/axios';
+import { useAlunos, AlunoAdmin, mensagemDeErro } from 'src/composables/useAdminData';
 import { formatarCpf, formatarTelefone, iniciais } from 'src/utils/format';
+import type { Rota } from 'src/utils/rotas';
 import GerarMensalidadeDialog from 'components/GerarMensalidadeDialog.vue';
 
+const $q = useQuasar();
 const { alunos, carregando, erro, carregar } = useAlunos();
+
+// ---------- Rota de cada aluno ----------
+const rotas = ref<Rota[]>([]);
+const vinculando = ref<string | null>(null);
+const opcoesRota = computed(() => [
+  { label: 'Sem rota', value: null },
+  ...rotas.value.map((r) => ({ label: r.nome, value: r.id })),
+]);
+
+async function carregarRotas() {
+  try {
+    rotas.value = (await api.get('/rotas')).data;
+  } catch {
+    rotas.value = []; // sem rotas, a coluna simplesmente não aparece
+  }
+}
+
+async function vincular(a: AlunoAdmin, rotaId: string | null) {
+  vinculando.value = a.cpf;
+  try {
+    await api.put(`/rotas/alunos/${a.cpf}`, { rotaId });
+    a.rotaId = rotaId;
+  } catch (e) {
+    $q.notify({ type: 'negative', message: mensagemDeErro(e, 'Não foi possível mudar a rota do aluno.') });
+  } finally {
+    vinculando.value = null;
+  }
+}
 const busca = ref('');
 const dialogo = ref(false);
 const selecionado = ref<AlunoAdmin | null>(null);
@@ -69,10 +116,18 @@ function abrirGerar(a: AlunoAdmin) {
   dialogo.value = true;
 }
 
-onMounted(carregar);
+onMounted(() => {
+  carregar();
+  carregarRotas();
+});
 </script>
 
 <style scoped>
+.rota-select {
+  width: 170px;
+  flex-shrink: 0;
+}
+
 .search {
   flex: 1;
   min-width: 220px;

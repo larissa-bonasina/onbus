@@ -5,17 +5,15 @@
 </template>
 
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref } from 'vue';
-import { Loader } from '@googlemaps/js-api-loader';
+import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import type * as Leaflet from 'leaflet';
-import type { PontoRota } from 'src/config/rota';
+import { CHAVE_MAPS, carregarGoogleMaps, type PontoRota } from 'src/utils/rotas';
 
 const props = defineProps<{ embarque: PontoRota; destino: PontoRota }>();
 
 const el = ref<HTMLElement | null>(null);
 const AZUL = '#354aff';
 const TINTA = '#12142a';
-const CHAVE = import.meta.env.VITE_GOOGLE_MAPS_KEY;
 
 let leafletMap: Leaflet.Map | null = null;
 
@@ -59,7 +57,7 @@ function pino(cor: string): google.maps.Symbol {
 }
 
 async function montarGoogle(alvo: HTMLElement) {
-  await new Loader({ apiKey: CHAVE as string, version: 'weekly', language: 'pt-BR', region: 'BR' }).importLibrary('maps');
+  await carregarGoogleMaps();
   const map = new google.maps.Map(alvo, {
     disableDefaultUI: true,
     clickableIcons: false,
@@ -109,9 +107,17 @@ async function montarLeaflet(alvo: HTMLElement) {
   alvo.classList.add('route-map--osm');
 }
 
-onMounted(async () => {
+function desmontar() {
+  leafletMap?.remove();
+  leafletMap = null;
+  el.value?.replaceChildren();
+  el.value?.classList.remove('route-map--osm');
+}
+
+async function montar() {
   if (!el.value) return;
-  if (CHAVE) {
+  desmontar();
+  if (CHAVE_MAPS) {
     try {
       await montarGoogle(el.value);
       return;
@@ -121,12 +127,14 @@ onMounted(async () => {
     }
   }
   await montarLeaflet(el.value);
-});
+}
 
-onBeforeUnmount(() => {
-  leafletMap?.remove();
-  leafletMap = null;
-});
+onMounted(montar);
+
+// Redesenha quando a rota muda (ex.: pré-visualização no cadastro de rotas).
+watch(() => [props.embarque.lat, props.embarque.lng, props.destino.lat, props.destino.lng], montar);
+
+onBeforeUnmount(desmontar);
 </script>
 
 <style scoped>

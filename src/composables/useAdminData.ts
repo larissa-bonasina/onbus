@@ -9,6 +9,7 @@ export interface AlunoAdmin {
   curso: string;
   numero: string;
   endereco?: string;
+  rotaId?: string | null;
   checkedIn?: boolean;
   checkinTime?: { _seconds: number } | null;
 }
