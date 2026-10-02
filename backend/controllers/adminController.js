@@ -29,29 +29,6 @@ exports.loginAdmin = async (req, res) => {
 };
 
 
-exports.visualizarContas = (req, res) => {
-    db.collection('contas').get()
-        .then(snapshot => {
-            const contas = [];
-            snapshot.forEach(doc => {
-                contas.push({ id: doc.id, ...doc.data() });
-            });
-            res.status(200).json(contas);
-        })
-        .catch(err => res.status(500).send('Erro ao visualizar contas: ' + err));
-};
-
-
-exports.atualizarContas = (req, res) => {
-    const { id } = req.params;
-    const novosDados = req.body;
-
-    db.collection('contas').doc(id).update(novosDados)
-        .then(() => res.status(200).send('Prestação de contas atualizada com sucesso!'))
-        .catch(err => res.status(500).send('Erro ao atualizar contas: ' + err));
-};
-
-
 function gerarIdBoleto() {
     return `boleto-${Math.random().toString(36).substr(2, 9)}`;
 }
@@ -61,7 +38,10 @@ exports.gerarBoleto = (req, res) => {
     const { aluno, valor, vencimento } = req.body;
 
     
-    const vencimentoDate = new Date(vencimento);
+    // "aaaa-mm-dd" vira meia-noite UTC com new Date(), que no Brasil cai no dia anterior;
+    // montar a data local ao meio-dia mantém o dia certo em qualquer fuso.
+    const [ano_, mes_, dia_] = String(vencimento).slice(0, 10).split('-').map(Number);
+    const vencimentoDate = new Date(ano_, mes_ - 1, dia_, 12);
     const mes = vencimentoDate.getMonth() + 1; 
     const ano = vencimentoDate.getFullYear();
 

@@ -5,11 +5,18 @@ const db = admin.firestore();
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
+// O hash da senha nunca sai do servidor.
+function semSenha(data) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { senha, ...resto } = data;
+  return resto;
+}
+
 // Listar todos os alunos
 exports.listarAlunos = async (req, res) => {
   try {
     const snapshot = await db.collection('alunos').get();
-    const alunos = snapshot.docs.map(doc => doc.data());
+    const alunos = snapshot.docs.map(doc => semSenha(doc.data()));
     res.status(200).json(alunos);
   } catch (error) {
     res.status(500).send('Erro ao listar alunos: ' + error.message);
@@ -24,20 +31,35 @@ exports.obterAluno = async (req, res) => {
     if (!alunoDoc.exists) {
       return res.status(404).send('Aluno não encontrado.');
     }
-    res.status(200).json(alunoDoc.data());
+    res.status(200).json(semSenha(alunoDoc.data()));
   } catch (error) {
     res.status(500).send('Erro ao obter aluno: ' + error.message);
   }
 };
 
 // Atualizar aluno pelo CPF
+// Só estes campos podem ser alterados pelo perfil — senha, CPF e presença têm fluxos próprios.
+const CAMPOS_EDITAVEIS = ['nome', 'email', 'numero', 'endereco', 'curso'];
+
 exports.atualizarAluno = async (req, res) => {
   const { cpf } = req.params;
-  const novosDados = req.body;
+  const novosDados = Object.fromEntries(
+    Object.entries(req.body).filter(([campo]) => CAMPOS_EDITAVEIS.includes(campo))
+  );
+
+  if (Object.keys(novosDados).length === 0) {
+    return res.status(400).json({ message: 'Nenhum campo editável enviado.' });
+  }
 
   try {
+    if (novosDados.email) {
+      const emailSnapshot = await db.collection('alunos').where('email', '==', novosDados.email).get();
+      if (emailSnapshot.docs.some((doc) => doc.id !== cpf)) {
+        return res.status(400).json({ message: 'Este e-mail já está em uso.' });
+      }
+    }
     await db.collection('alunos').doc(cpf).update(novosDados);
-    res.status(200).send('Aluno atualizado com sucesso!');
+    res.status(200).json({ message: 'Dados atualizados.', aluno: novosDados });
   } catch (error) {
     res.status(500).send('Erro ao atualizar aluno: ' + error.message);
   }

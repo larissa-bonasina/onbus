@@ -1,25 +1,18 @@
-// Quasar SCSS (& Sass) Variables
-// --------------------------------------------------
-// To customize the look and feel of this app, you can override
-// the Sass/SCSS variables found in Quasar's source Sass/SCSS files.
+// Identidade visual OnBus (proposta aprovada em set/2026).
+// O azul #354aff é a cor da marca; o resto deriva dele.
 
-// Check documentation for full list of Quasar variables
+$primary   : #354aff;
+$secondary : #12142a;
+$accent    : #1e2bb0;
 
-// Your own variables (that are declared here) and Quasar's own
-// ones will be available out of the box in your .vue/.scss/.sass files
+$dark      : #12142a;
+$dark-page : #0b0d1a;
 
-// It's highly recommended to change the default colors
-// to match your app's branding.
-// Tip: Use the "Theme Builder" on Quasar's documentation website.
+$positive  : #0e8a59;
+$negative  : #c62a30;
+$info      : #354aff;
+$warning   : #f0a020;
 
-$primary   : #1976D2;
-$secondary : #26A69A;
-$accent    : #9C27B0;
-
-$dark      : #1D1D1D;
-$dark-page : #121212;
-
-$positive  : #21BA45;
-$negative  : #C10015;
-$info      : #31CCEC;
-$warning   : #F2C037;
+$typography-font-family : 'DM Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+$button-border-radius   : 999px;
+$generic-border-radius  : 14px;

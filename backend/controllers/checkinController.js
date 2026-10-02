@@ -38,7 +38,9 @@ exports.listarPresentes = (req, res) => {
 
     const alunosPresentes = [];
     snapshot.forEach(doc => {
-      alunosPresentes.push(doc.data());
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { senha, ...aluno } = doc.data();
+      alunosPresentes.push(aluno);
     });
 
     res.status(200).json(alunosPresentes);

@@ -1,149 +1,110 @@
 <template>
-  <q-page>
-    <div class="page-container">
-      <div class="back-button">
-        <q-icon name="arrow_back" size="24px" @click="goBack" />
+  <AuthScreen title="Entrar" subtitle="Use o e-mail e a senha da sua conta OnBus." back-to="/">
+    <q-form class="form" @submit.prevent="entrar">
+      <q-input
+        v-model="email"
+        outlined
+        type="email"
+        label="E-mail"
+        autocomplete="email"
+        inputmode="email"
+        :rules="[(v) => !!v || 'Informe seu e-mail']"
+        lazy-rules
+      />
+      <q-input
+        v-model="senha"
+        outlined
+        :type="mostrarSenha ? 'text' : 'password'"
+        label="Senha"
+        autocomplete="current-password"
+        :rules="[(v) => !!v || 'Informe sua senha']"
+        lazy-rules
+      >
+        <template #append>
+          <q-btn
+            flat
+            round
+            dense
+            :icon="mostrarSenha ? 'sym_r_visibility_off' : 'sym_r_visibility'"
+            :aria-label="mostrarSenha ? 'Ocultar senha' : 'Mostrar senha'"
+            @click="mostrarSenha = !mostrarSenha"
+          />
+        </template>
+      </q-input>
+
+      <div v-if="erro" class="form__error" role="alert">
+        <q-icon name="sym_r_error" size="20px" />{{ erro }}
       </div>
-      <div class="top-section">
-        <div class="fingerprint">
-          <img src="src/assets/Fingerprint-bro 2.png" alt="fingerprint" />
-        </div>
-      </div>
-      <div class="input-container">
-        <q-input
-          filled
-          v-model="email"
-          label="Enter your e-mail..."
-          class="email"
-          rounded
-        />
-        <q-input
-          filled
-          v-model="password"
-          label="Password"
-          type="password"
-          class="password"
-          rounded
-        />
-      </div>
-      <q-btn label="Login" class="entrar" @click="login" />
-    </div>
-  </q-page>
+
+      <q-btn unelevated no-caps type="submit" color="primary" label="Entrar" class="form__submit" :loading="enviando" />
+    </q-form>
+
+    <template #footer>
+      Ainda não tem conta? <router-link to="/signup" class="link">Criar conta</router-link>
+    </template>
+  </AuthScreen>
 </template>
 
-<script>
-import { useRouter } from 'vue-router';
+<script setup lang="ts">
 import { ref } from 'vue';
+import { useRouter } from 'vue-router';
 import { api } from 'boot/axios';
+import AuthScreen from 'components/AuthScreen.vue';
 
-export default {
-  setup() {
-    const router = useRouter();
-    const email = ref('');
-    const password = ref('');
+const router = useRouter();
+const email = ref('');
+const senha = ref('');
+const mostrarSenha = ref(false);
+const enviando = ref(false);
+const erro = ref('');
 
-    const login = async () => {
-      if (!email.value || !password.value) {
-        alert('Por favor, insira seu e-mail e senha.');
-        return;
-      }
-
-      try {
-        const response = await api.post('/alunos/login', {
-          email: email.value,
-          senha: password.value,
-        });
-
-        if (response.status === 200 && response.data.token) {
-          localStorage.setItem('token', response.data.token);
-          localStorage.setItem('aluno', JSON.stringify(response.data.aluno));
-          router.push('/principal');
-        } else {
-          alert(response.data.message || 'E-mail ou senha inválidos');
-        }
-      } catch (error) {
-        console.error('Erro ao realizar login:', error);
-        alert('E-mail ou senha inválidos.');
-      }
-    };
-
-    const goBack = () => {
-      router.go(-1);
-    };
-
-    return {
-      email,
-      password,
-      login,
-      goBack,
-    };
-  },
-};
+async function entrar() {
+  erro.value = '';
+  enviando.value = true;
+  try {
+    const { data } = await api.post('/alunos/login', { email: email.value.trim(), senha: senha.value });
+    localStorage.setItem('token', data.token);
+    localStorage.setItem('aluno', JSON.stringify(data.aluno));
+    router.push('/principal');
+  } catch (e: unknown) {
+    const status = (e as { response?: { status?: number } }).response?.status;
+    if (status === 401 || status === 400) erro.value = 'E-mail ou senha incorretos.';
+    else if (status === 429) erro.value = 'Muitas tentativas. Aguarde alguns minutos e tente de novo.';
+    else erro.value = 'Não foi possível entrar agora. Verifique sua conexão.';
+  } finally {
+    enviando.value = false;
+  }
+}
 </script>
 
 <style scoped>
-.page-container {
+.form {
+  display: grid;
+  gap: 6px;
+}
+
+.form__error {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  height: 100vh;
-  background-color: rgba(230, 228, 245, 1);
-  text-align: center;
+  gap: 8px;
+  padding: 12px 14px;
+  margin-bottom: 6px;
+  border-radius: 12px;
+  background: var(--ob-bad-bg);
+  color: var(--ob-bad);
+  font-size: 14px;
+  font-weight: 500;
 }
 
-.top-section {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-bottom: 20px;
+.form__submit {
+  height: 54px;
+  font-size: 16px;
+  margin-top: 6px;
 }
 
-.fingerprint {
-  width: 50vw;
-  max-width: 250px;
-  height: auto;
-  margin-bottom: 50px;
-}
-
-.input-container {
-  display: flex;
-  flex-direction: column;
-  width: 80%;
-  max-width: 300px;
-  margin-top: 20px;
-  gap: 15px;
-}
-
-.q-btn {
-  margin-bottom: 10px;
-  width: 100%;
-  border-radius: 30px;
-}
-
-.email,
-.password {
-  background-color: #ffffff;
-  color: #1d1a1a;
-  border-radius: 25px;
-  height: 50px;
-}
-
-.entrar {
-  background-color: #007bff;
-  color: #ffffff;
-  padding: 5px;
-  width: 40%;
-  max-width: 300px;
-  margin-top: 30px;
-  border-radius: 15px;
-}
-
-.back-button {
-  position: absolute;
-  top: 16px;
-  left: 16px;
-  cursor: pointer;
-  z-index: 2;
+.link {
+  color: var(--ob-blue-600);
+  font-weight: 700;
+  text-decoration: none;
 }
 </style>

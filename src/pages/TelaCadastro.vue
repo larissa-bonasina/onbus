@@ -1,254 +1,201 @@
 <template>
-  <q-page class="custom-page">
-    <div class="page-container">
-      <div class="back-button">
-        <q-icon name="arrow_back" size="24px" @click="goBack" />
-      </div>
-      <div class="top-section">
-        <div class="fingerprint">
-          <img src="src/assets/Fingerprint-bro 2.png" alt="fingerprint" />
-        </div>
-      </div>
-      <div class="input-container">
-        <div class="rectangle"></div>
-
-        <q-input
-          filled
-          v-model="email"
-          placeholder="Enter your e-mail..."
-          class="input-field"
-          rounded
-        />
-        <q-input
-          filled
-          v-model="password"
-          placeholder="Password"
-          type="password"
-          class="input-field"
-          rounded
-        />
-        <q-input
-          filled
-          v-model="confirmPassword"
-          placeholder="Confirm Password"
-          type="password"
-          class="input-field"
-          rounded
-        />
-        <q-input
-          filled
-          v-model="firstName"
-          placeholder="First Name"
-          class="input-field"
-          rounded
-        />
-        <q-input
-          filled
-          v-model="lastName"
-          placeholder="Last Name"
-          class="input-field"
-          rounded
-        />
-        <q-input
-          filled
-          v-model="phone"
-          placeholder="Phone Number"
-          class="input-field"
-          rounded
-        />
-        <q-input
-          filled
-          v-model="address"
-          placeholder="Address"
-          class="input-field"
-          rounded
-        />
-        <q-input
-          filled
-          v-model="city"
-          placeholder="City"
-          class="input-field"
-          rounded
-        />
-        <q-input
-          filled
-          v-model="state"
-          placeholder="State"
-          class="input-field"
-          rounded
-        />
-        <q-input
-          filled
-          v-model="CPF"
-          placeholder="CPF"
-          class="input-field"
-          rounded
-        />
-        <q-input
-          filled
-          v-model="curso"
-          placeholder="Curso"
-          class="input-field"
-          rounded
-        />
-
-        <q-btn label="Signup" class="entrar" @click="register" />
-      </div>
+  <AuthScreen
+    :eyebrow="`Etapa ${etapa} de 2`"
+    :title="etapa === 1 ? 'Criar conta' : 'Endereço e acesso'"
+    :subtitle="etapa === 1 ? 'Seus dados para a associação identificar você.' : 'Quase lá. Defina como você vai entrar no app.'"
+  >
+    <div class="steps" aria-hidden="true">
+      <span class="steps__bar steps__bar--on" />
+      <span class="steps__bar" :class="{ 'steps__bar--on': etapa === 2 }" />
     </div>
-  </q-page>
+
+    <q-form v-if="etapa === 1" class="form" @submit.prevent="avancar">
+      <q-input v-model="dados.nome" outlined label="Nome completo" autocomplete="name" :rules="[obrigatorio]" lazy-rules />
+      <q-input
+        v-model="dados.cpf"
+        outlined
+        label="CPF"
+        inputmode="numeric"
+        mask="###.###.###-##"
+        unmasked-value
+        :rules="[obrigatorio, (v) => cpfValido(v) || 'CPF inválido. Confira os números.']"
+        lazy-rules
+      />
+      <q-input
+        v-model="dados.numero"
+        outlined
+        type="tel"
+        label="Telefone (WhatsApp)"
+        autocomplete="tel-national"
+        mask="(##) #####-####"
+        unmasked-value
+        :rules="[obrigatorio, (v) => soDigitos(v).length >= 10 || 'Telefone incompleto']"
+        lazy-rules
+      />
+      <q-input v-model="dados.curso" outlined label="Curso" :rules="[obrigatorio]" lazy-rules />
+      <q-btn unelevated no-caps type="submit" color="primary" label="Continuar" class="form__submit" />
+    </q-form>
+
+    <q-form v-else class="form" @submit.prevent="cadastrar">
+      <q-input v-model="dados.rua" outlined label="Endereço" hint="Rua e número" autocomplete="address-line1" :rules="[obrigatorio]" lazy-rules />
+      <div class="row-2">
+        <q-input v-model="dados.cidade" outlined label="Cidade" autocomplete="address-level2" :rules="[obrigatorio]" lazy-rules />
+        <q-select v-model="dados.uf" outlined label="UF" :options="UFS" class="row-2__uf" />
+      </div>
+      <q-input v-model="dados.email" outlined type="email" label="E-mail" autocomplete="email" inputmode="email" :rules="[obrigatorio, emailValido]" lazy-rules />
+      <q-input
+        v-model="dados.senha"
+        outlined
+        :type="mostrarSenha ? 'text' : 'password'"
+        label="Senha"
+        hint="Pelo menos 6 caracteres"
+        autocomplete="new-password"
+        :rules="[(v) => (v && v.length >= 6) || 'Use pelo menos 6 caracteres']"
+        lazy-rules
+      >
+        <template #append>
+          <q-btn
+            flat round dense
+            :icon="mostrarSenha ? 'sym_r_visibility_off' : 'sym_r_visibility'"
+            :aria-label="mostrarSenha ? 'Ocultar senha' : 'Mostrar senha'"
+            @click="mostrarSenha = !mostrarSenha"
+          />
+        </template>
+      </q-input>
+
+      <div v-if="erro" class="form__error" role="alert"><q-icon name="sym_r_error" size="20px" />{{ erro }}</div>
+
+      <div class="form__actions">
+        <q-btn flat no-caps label="Voltar" color="grey-8" @click="etapa = 1" />
+        <q-btn unelevated no-caps type="submit" color="primary" label="Criar conta" class="form__submit form__submit--grow" :loading="enviando" />
+      </div>
+    </q-form>
+
+    <template #footer>
+      Já tem conta? <router-link to="/login" class="link">Entrar</router-link>
+    </template>
+  </AuthScreen>
 </template>
 
-<script>
+<script setup lang="ts">
+import { reactive, ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { ref } from 'vue';
+import { useQuasar } from 'quasar';
 import { api } from 'boot/axios';
+import AuthScreen from 'components/AuthScreen.vue';
+import { cpfValido, soDigitos } from 'src/utils/format';
 
-export default {
-  setup() {
-    const router = useRouter();
-    const email = ref('');
-    const password = ref('');
-    const confirmPassword = ref('');
-    const firstName = ref('');
-    const lastName = ref('');
-    const phone = ref('');
-    const address = ref('');
-    const city = ref('');
-    const state = ref('');
-    const CPF = ref('');
-    const curso = ref('');
+const UFS = ['AC','AL','AP','AM','BA','CE','DF','ES','GO','MA','MT','MS','MG','PA','PB','PR','PE','PI','RJ','RN','RS','RO','RR','SC','SP','SE','TO'];
 
-    const register = async () => {
-      if (password.value !== confirmPassword.value) {
-        alert('Passwords do not match.');
-        return;
-      }
+const $q = useQuasar();
+const router = useRouter();
+const etapa = ref<1 | 2>(1);
+const mostrarSenha = ref(false);
+const enviando = ref(false);
+const erro = ref('');
 
-      try {
-        const response = await api.post('/alunos/cadastro', {
-          tipoConta: 'aluno',
-          email: email.value,
-          senha: password.value,
-          nome: `${firstName.value} ${lastName.value}`,
-          curso: curso.value,
-          cpf: CPF.value,
-          numero: phone.value,
-          endereco: `${address.value}, ${city.value}, ${state.value}`,
-        });
+const dados = reactive({
+  nome: '', cpf: '', numero: '', curso: '',
+  rua: '', cidade: '', uf: 'MT', email: '', senha: '',
+});
 
-        console.log('Cadastro realizado com sucesso:', response.data);
-        alert('Cadastro realizado com sucesso!');
-        router.push('/login');
-      } catch (error) {
-        console.error('Erro ao cadastrar:', error);
-        alert('Falha no cadastro');
-      }
-    };
+const obrigatorio = (v: string) => !!(v && String(v).trim()) || 'Campo obrigatório';
+const emailValido = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) || 'E-mail inválido';
 
-    const goBack = () => {
-      router.go(-1);
-    };
+function avancar() {
+  erro.value = '';
+  etapa.value = 2;
+}
 
-    return {
-      email,
-      password,
-      confirmPassword,
-      firstName,
-      lastName,
-      phone,
-      address,
-      city,
-      state,
-      CPF,
-      curso,
-      register,
-      goBack,
-    };
-  },
-};
+async function cadastrar() {
+  erro.value = '';
+  enviando.value = true;
+  try {
+    await api.post('/alunos/cadastro', {
+      nome: dados.nome.trim(),
+      cpf: soDigitos(dados.cpf),
+      numero: soDigitos(dados.numero),
+      curso: dados.curso.trim(),
+      endereco: `${dados.rua.trim()}, ${dados.cidade.trim()}, ${dados.uf}`,
+      email: dados.email.trim(),
+      senha: dados.senha,
+    });
+    $q.notify({ type: 'positive', icon: 'sym_r_check_circle', message: 'Conta criada', caption: 'Agora é só entrar.' });
+    router.push('/login');
+  } catch (e: unknown) {
+    const res = (e as { response?: { data?: unknown } }).response;
+    const data = res?.data as { message?: string; errors?: { msg: string }[] } | string | undefined;
+    if (typeof data === 'string' && data) erro.value = data;
+    else if (data && typeof data === 'object') erro.value = data.errors?.[0]?.msg || data.message || '';
+    if (!erro.value) erro.value = res ? 'Não foi possível criar a conta. Confira os dados.' : 'Sem conexão. Tente de novo em instantes.';
+    if (/CPF/i.test(erro.value)) etapa.value = 1;
+  } finally {
+    enviando.value = false;
+  }
+}
 </script>
 
 <style scoped>
-.custom-page {
-  background-color: rgba(230, 228, 245, 1);
-  min-height: 100vh;
+.steps {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin: -12px 0 24px;
 }
 
-.page-container {
+.steps__bar {
+  height: 4px;
+  border-radius: 4px;
+  background: var(--ob-subtle);
+  transition: background-color 0.25s;
+}
+
+.steps__bar--on {
+  background: var(--ob-blue-500);
+}
+
+.form {
+  display: grid;
+  gap: 6px;
+}
+
+.row-2 {
+  display: grid;
+  grid-template-columns: 1fr 96px;
+  gap: 10px;
+}
+
+.form__error {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-  text-align: center;
+  gap: 8px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--ob-bad-bg);
+  color: var(--ob-bad);
+  font-size: 14px;
+  font-weight: 500;
 }
 
-.top-section {
+.form__submit {
+  height: 54px;
+  font-size: 16px;
+  margin-top: 6px;
+}
+
+.form__actions {
   display: flex;
-  flex-direction: column;
+  gap: 8px;
   align-items: center;
-  margin-bottom: 0;
-  padding-top: 10px;
 }
 
-.fingerprint {
-  width: 50vw;
-  max-width: 250px;
-  height: auto;
-  margin-top: 20px;
-  margin-bottom: 50px;
+.form__submit--grow {
+  flex: 1;
 }
 
-.input-container {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 100%;
-  max-width: 360px;
-  margin-top: 20px;
-}
-
-.rectangle {
-  margin-top: 0%;
-  background-color: #354aff;
-  width: 85%;
-  height: 680px;
-  border-radius: 48px;
-  position: absolute;
-  top: -30px;
-  z-index: 0;
-}
-
-.input-field {
-  background-color: #ffffff;
-  color: #3a3a3a;
-  border-radius: 25px;
-  height: 40px;
-  margin-bottom: 10px;
-  width: 80%;
-  max-width: 300px;
-  z-index: 1;
-}
-
-.input-field .q-field__control {
-  height: 40px;
-  line-height: 40px;
-}
-
-.entrar {
-  background-color: #ffffff;
-  color: #000000;
-  padding: 10px 20px;
-  margin-top: 20px;
-  border-radius: 25px;
-}
-
-.back-button {
-  position: absolute;
-  top: 16px;
-  left: 16px;
-  cursor: pointer;
-  z-index: 2;
+.link {
+  color: var(--ob-blue-600);
+  font-weight: 700;
+  text-decoration: none;
 }
 </style>

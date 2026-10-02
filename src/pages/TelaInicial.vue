@@ -1,178 +1,150 @@
 <template>
-  <q-page>
-    <div class="page-container">
-      <!-- Logo e imagem do ônibus -->
-      <div class="top-section">
-        <div class="logo-container">
-          <img src="src/assets/logo.png" alt="App Logo" />
-        </div>
-        <div class="bus-container">
-          <img
-            src="src/assets/freepik--Bus--inject-5.png"
-            alt="Ônibus"
-            style="object-fit: contain"
-          />
-        </div>
-      </div>
+  <q-page class="welcome">
+    <svg class="welcome__pattern" viewBox="0 0 390 844" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      <g fill="none" stroke="rgba(255,255,255,.13)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M-20 210 H170 Q195 210 195 235 V350 Q195 375 220 375 H420" />
+        <path d="M85 -20 V125 Q85 150 110 150 H290 Q315 150 315 175 V460" />
+        <path d="M-20 460 H95 Q120 460 120 435 V280" />
+      </g>
+      <g fill="#354aff" stroke="rgba(255,255,255,.35)" stroke-width="3">
+        <circle cx="195" cy="280" r="6" />
+        <circle cx="315" cy="320" r="6" />
+        <circle cx="85" cy="55" r="6" />
+        <circle cx="120" cy="350" r="6" />
+      </g>
+      <circle cx="315" cy="150" r="28" fill="rgba(255,255,255,.14)" class="welcome__pulse" />
+      <circle cx="315" cy="150" r="12" fill="#fff" />
+    </svg>
 
-      <!-- Seção azul com texto e botões -->
-      <div class="blue-square">
-        <div class="content-wrapper">
-          <p class="square-text1">Bem-vindo!</p>
-          <p class="square-text2">
-            OnBus, o aplicativo de controle para universitários intermunicipais!
-          </p>
+    <div class="welcome__content">
+      <OnbusLogo class="welcome__logo" dot="#fff" />
+
+      <div class="welcome__bottom">
+        <h1 class="welcome__headline">Seu ônibus da faculdade, sem complicação.</h1>
+        <p class="welcome__sub">
+          Confirme presença, acompanhe sua rota e pague a mensalidade da associação — tudo num app só.
+        </p>
+
+        <div class="welcome__ctas">
+          <q-btn unelevated no-caps class="cta cta--white" label="Entrar" to="/login" />
+          <q-btn outline no-caps class="cta cta--ghost" label="Criar conta" to="/signup" />
         </div>
 
-        <!-- Botões -->
-        <div class="button-container">
-          <div class="horizontal-buttons">
-            <q-btn label="Login" class="login-btn" @click="goToLogin" />
-            <q-btn label="Cadastro" class="signup-btn" @click="goToSignup" />
-          </div>
-          <q-btn
-            label="Adm Associados"
-            class="adm-btn"
-            @click="goToValidaAdm"
-          />
-        </div>
+        <router-link to="/ValidaAdm" class="welcome__assoc">
+          Sou da associação <q-icon name="sym_r_arrow_forward" size="18px" />
+        </router-link>
       </div>
     </div>
   </q-page>
 </template>
 
-<script>
-import { useRouter } from 'vue-router';
-
-export default {
-  setup() {
-    const router = useRouter();
-
-    const goToLogin = () => {
-      router.push('/login');
-    };
-
-    const goToSignup = () => {
-      router.push('/signup');
-    };
-
-    const goToValidaAdm = () => {
-      router.push('/ValidaAdm');
-    };
-
-    return {
-      goToLogin,
-      goToSignup,
-      goToValidaAdm,
-    };
-  },
-};
+<script setup lang="ts">
+import OnbusLogo from 'components/OnbusLogo.vue';
 </script>
 
 <style scoped>
-.page-container {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  height: 100vh;
-  background-color: #ffffff;
-}
-
-.top-section {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  padding-top: 40px;
-  padding-bottom: 20px;
-  position: relative; /* Para permitir o posicionamento absoluto do ônibus */
-}
-
-.logo-container img {
-  width: 50vw;
-  max-width: 350px;
-  height: auto;
-  margin-top: 200px;
-}
-
-.bus-container {
-  position: absolute;
-  top: 515px; /* Ajusta a posição do ônibus acima */
-  right: 5%;  /* Ajusta a posição do ônibus no lado direito */
-  z-index: 1; /* Garante que o ônibus fique acima do container azul */
-}
-
-.bus-container img {
-  width: 40vw;  /* Ajuste o tamanho do ônibus conforme necessário */
-  max-width: 200px; /* Define um limite de tamanho máximo */
-  height: auto;
-}
-
-.blue-square {
-  background-color: #1b24ff;
-  padding: 25px 5% 30px 5%;
-  border-radius: 25px 25px 0 0;
-  box-sizing: border-box;
-  color: white;
-  width: 100%;
-}
-
-.content-wrapper {
-  text-align: center;
-  margin-bottom: 15px;
-}
-
-.square-text1 {
-  font-size: clamp(1.5em, 2.5vw, 2.2em);
-  margin: 5px 0;
-  color: #ffffff;
-}
-
-.square-text2 {
-  font-size: clamp(1em, 1.5vw, 1.3em);
-  color: #f0f0f0;
-}
-
-.button-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 100%;
-  gap: 15px;
-  margin-top: 20px;
-}
-
-.horizontal-buttons {
-  display: flex;
-  gap: 10px;
-  justify-content: center;
-  width: 100%;
-}
-
-.login-btn,
-.signup-btn,
-.adm-btn {
-  border-radius: 25px;
-  padding: 12px 20px;
-  font-size: clamp(1em, 1.2vw, 1.1em);
-  max-width: 160px;
-}
-
-.login-btn {
-  background-color: #1d1a1a;
+.welcome {
+  position: relative;
+  overflow: hidden;
+  background: var(--ob-blue-500);
   color: #fff;
 }
 
-.signup-btn {
-  background-color: #ffffff;
-  color: #1d1a1a;
+.welcome__pattern {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
 }
 
-.adm-btn {
-  background-color: #354aff;
-  color: #ffffff;
-  width: 80%;
-  text-align: center;
+.welcome__pulse {
+  transform-origin: 315px 150px;
+  animation: pulse 2.6s ease-out infinite;
 }
 
+@keyframes pulse {
+  0% { transform: scale(0.6); opacity: 1; }
+  100% { transform: scale(1.5); opacity: 0; }
+}
+
+.welcome__content {
+  position: relative;
+  min-height: inherit;
+  max-width: 480px;
+  margin: 0 auto;
+  padding: calc(40px + env(safe-area-inset-top, 0px)) 24px calc(28px + env(safe-area-inset-bottom, 0px));
+  display: flex;
+  flex-direction: column;
+}
+
+.welcome__logo {
+  font-size: 34px;
+  color: #fff;
+}
+
+.welcome__bottom {
+  margin-top: auto;
+  padding-top: 48px;
+}
+
+.welcome__headline {
+  font-size: clamp(2rem, 9vw, 2.6rem);
+  line-height: 1.04;
+  letter-spacing: -0.035em;
+  color: #fff;
+}
+
+.welcome__sub {
+  margin: 14px 0 0;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.welcome__ctas {
+  display: grid;
+  gap: 12px;
+  margin-top: 30px;
+}
+
+.cta {
+  height: 54px;
+  font-size: 16px;
+}
+
+.cta--white {
+  background: #fff;
+  color: var(--ob-blue-600);
+}
+
+.cta--ghost {
+  color: #fff;
+}
+
+.cta--ghost::before {
+  border-color: rgba(255, 255, 255, 0.6);
+  border-width: 1.5px;
+}
+
+.welcome__assoc {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  margin-top: 20px;
+  padding: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: none;
+}
+
+.welcome__assoc:focus-visible {
+  outline: 2px solid #fff;
+  border-radius: 8px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .welcome__pulse { animation: none; }
+}
 </style>

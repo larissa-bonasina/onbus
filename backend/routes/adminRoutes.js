@@ -22,9 +22,5 @@ router.post('/login', loginValidation, handleValidation, adminController.loginAd
 // Rota para gerar boleto (apenas para administradores autenticados)
 router.post('/gerar-boleto', verificarAdmin, gerarBoletoValidation, handleValidation, adminController.gerarBoleto);
 
-// Prestação de contas (apenas para administradores autenticados)
-router.get('/contas', verificarAdmin, adminController.visualizarContas);
-router.put('/contas/:id', verificarAdmin, adminController.atualizarContas);
-
 module.exports = router;
 

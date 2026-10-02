@@ -1,154 +1,109 @@
 <template>
-  <q-page class="custom-page">
-    <div class="image-container">
-      <img src="../assets/school bus-rafiki 1.png" alt="School Bus" class="school-bus-image" />
-    </div>
-    <div class="page-container">
-      <div class="back-button">
-        <q-icon name="arrow_back" size="24px" @click="goBack" />
-      </div>
-      <div class="input-container">
-        <div class="rectangle"></div>
-        <q-input
-          filled
-          v-model="email"
-          placeholder="E-mail"
-          class="input-field"
-          rounded
-        />
-        <q-input
-          filled
-          v-model="password"
-          type="password"
-          placeholder="Senha"
-          class="input-field"
-          rounded
-        />
-        <q-btn label="Login" class="entrar" @click="login" />
-      </div>
-    </div>
-  </q-page>
+  <AuthScreen
+    eyebrow="Painel da associação"
+    title="Acesso da associação"
+    subtitle="Área para a diretoria acompanhar presença, alunos e mensalidades."
+    back-to="/"
+  >
+    <q-form class="form" @submit.prevent="entrar">
+      <q-input
+        v-model="email"
+        outlined
+        type="email"
+        label="E-mail"
+        autocomplete="username"
+        :rules="[(v) => !!v || 'Informe o e-mail']"
+        lazy-rules
+      />
+      <q-input
+        v-model="senha"
+        outlined
+        :type="mostrarSenha ? 'text' : 'password'"
+        label="Senha"
+        autocomplete="current-password"
+        :rules="[(v) => !!v || 'Informe a senha']"
+        lazy-rules
+      >
+        <template #append>
+          <q-btn
+            flat round dense
+            :icon="mostrarSenha ? 'sym_r_visibility_off' : 'sym_r_visibility'"
+            :aria-label="mostrarSenha ? 'Ocultar senha' : 'Mostrar senha'"
+            @click="mostrarSenha = !mostrarSenha"
+          />
+        </template>
+      </q-input>
+
+      <div v-if="erro" class="form__error" role="alert"><q-icon name="sym_r_error" size="20px" />{{ erro }}</div>
+
+      <q-btn unelevated no-caps type="submit" color="secondary" label="Entrar no painel" class="form__submit" :loading="enviando" />
+    </q-form>
+
+    <template #footer>
+      É aluno? <router-link to="/login" class="link">Entrar como aluno</router-link>
+    </template>
+  </AuthScreen>
 </template>
 
-<script>
-import { useRouter } from 'vue-router';
+<script setup lang="ts">
 import { ref } from 'vue';
+import { useRouter } from 'vue-router';
 import { api } from 'boot/axios';
+import AuthScreen from 'components/AuthScreen.vue';
 
-export default {
-  setup() {
-    const router = useRouter();
-    const email = ref('');
-    const password = ref('');
+const router = useRouter();
+const email = ref('');
+const senha = ref('');
+const mostrarSenha = ref(false);
+const enviando = ref(false);
+const erro = ref('');
 
-    const goBack = () => {
-      router.go(-1);
-    };
-
-    const login = async () => {
-      try {
-        const response = await api.post('/admin/login', {
-          email: email.value,
-          password: password.value,
-        });
-
-        localStorage.setItem('token', response.data.token);
-        router.push({ path: '/TelaAdm' });
-      } catch (error) {
-        alert('Login falhou. Verifique o e-mail e a senha.');
-      }
-    };
-
-    return {
-      email,
-      password,
-      goBack,
-      login,
-    };
-  },
-};
+async function entrar() {
+  erro.value = '';
+  enviando.value = true;
+  try {
+    const { data } = await api.post('/admin/login', { email: email.value.trim(), password: senha.value });
+    localStorage.setItem('token', data.token);
+    router.push('/admin');
+  } catch (e: unknown) {
+    const status = (e as { response?: { status?: number } }).response?.status;
+    if (status === 401 || status === 400) erro.value = 'E-mail ou senha incorretos.';
+    else if (status === 429) erro.value = 'Muitas tentativas. Aguarde alguns minutos.';
+    else erro.value = 'Não foi possível entrar agora. Verifique sua conexão.';
+  } finally {
+    enviando.value = false;
+  }
+}
 </script>
 
 <style scoped>
-.custom-page {
-  background-color: #354aff;
-  min-height: 100vh;
+.form {
+  display: grid;
+  gap: 6px;
 }
 
-.image-container {
+.form__error {
   display: flex;
-  justify-content: center;
-  margin-bottom: -30px;
-  z-index: 2;
-}
-
-.school-bus-image {
-  width: 200px;
-  height: auto;
-  margin-top: 5%;
-}
-
-.page-container {
-  display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-  text-align: center;
-  padding: 40px;
-  z-index: 1;
+  gap: 8px;
+  padding: 12px 14px;
+  margin-bottom: 6px;
+  border-radius: 12px;
+  background: var(--ob-bad-bg);
+  color: var(--ob-bad);
+  font-size: 14px;
+  font-weight: 500;
 }
 
-.input-container {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 100%;
-  max-width: 600px;
-  margin-top: 60px;
+.form__submit {
+  height: 54px;
+  font-size: 16px;
+  margin-top: 6px;
 }
 
-.rectangle {
-  background-color: #ffffff;
-  width: 100%;
-  height: 310px;
-  border-radius: 48px;
-  position: absolute;
-  top: -250px;
-}
-
-.input-field {
-  background-color: #ffffff;
-  color: #3a3a3a;
-  border-radius: 25px;
-  height: 50px;
-  margin-bottom: 10px;
-  width: 90%;
-  max-width: 400px;
-  position: relative;
-  top: -180px;
-}
-
-.entrar {
-  background-color: #354aff;
-  color: #ffffff;
-  padding: 12px 24px;
-  margin-top: 10px;
-  border-radius: 25px;
-  width: 90%;
-  max-width: 400px;
-  position: relative;
-  top: -155px;
-}
-
-.back-button {
-  color: #ffffff;
-  position: absolute;
-  top: 16px;
-  left: 16px;
-  cursor: pointer;
-  z-index: 3;
+.link {
+  color: var(--ob-blue-600);
+  font-weight: 700;
+  text-decoration: none;
 }
 </style>
-

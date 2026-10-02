@@ -52,10 +52,6 @@ exports.getTodosBoletos = async (req, res) => {
       });
     });
 
-    if (boletos.length === 0) {
-      return res.status(404).json({ mensagem: 'Nenhum boleto encontrado' });
-    }
-
     res.json(boletos);
   } catch (error) {
     console.error('Erro ao buscar boletos:', error);

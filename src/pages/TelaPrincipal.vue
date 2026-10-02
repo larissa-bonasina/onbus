@@ -1,349 +1,297 @@
 <template>
-  <div>
-    <!-- Cabeçalho -->
-    <header class="header">
-      <q-avatar size="50px" class="profile-icon bg-white text-primary">
-        <img src="https://cdn-icons-png.flaticon.com/512/2922/2922510.png" alt="admin fofo" />
-      </q-avatar>
-      <a href="/perfil" class="username-link">Perfil do Estudante</a>
+  <q-page class="home" :style-fn="fullHeight">
+    <RouteMap class="home__map" :embarque="ROTA.embarque" :destino="ROTA.destino" />
+
+    <header class="home__top">
+      <router-link to="/perfil" class="greet" aria-label="Abrir perfil">
+        <span class="greet__avatar">{{ iniciais }}</span>
+        Olá, {{ primeiroNome }}
+      </router-link>
+      <router-link to="/avisos" class="round-btn" aria-label="Avisos da associação">
+        <q-icon name="sym_r_notifications" size="22px" />
+      </router-link>
     </header>
 
-    <!-- Botão de menu (mobile) -->
-    <div class="nav-toggle" @click="toggleNav">
-      <q-icon name="menu" size="24px" color="white" />
-    </div>
+    <section class="sheet">
+      <div class="sheet__handle" />
 
-    <!-- Fundo escuro ao abrir nav -->
-    <div class="nav-backdrop" :class="{ 'nav-backdrop-open': isNavOpen }" @click="toggleNav"></div>
+      <div class="sheet__status">
+        <span v-if="confirmadoHoje" class="ob-chip ob-chip--ok">Presença confirmada</span>
+        <span v-else class="ob-chip ob-chip--neutral">Presença não confirmada</span>
+        <span class="ob-muted sheet__hint">
+          {{ confirmadoHoje ? `hoje às ${horaCheckin}` : 'para a viagem de hoje' }}
+        </span>
+      </div>
 
-    <!-- Menu lateral -->
-    <nav class="nav-bar" :class="{ 'nav-bar-open': isNavOpen }">
-      <div class="nav-buttons">
-        <q-btn
-          v-for="button in navButtons"
-          :key="button.id"
-          :label="button.label"
-          class="nav-button"
-          @click="navigateTo(button.route)"
-          rounded
-          unelevated
+      <h1 class="sheet__title">{{ ROTA.nome }}</h1>
+      <div class="sheet__meta">
+        <span><q-icon name="sym_r_trip_origin" size="16px" />Embarque: {{ ROTA.embarque.nome }}</span>
+        <span><q-icon name="sym_r_location_on" size="16px" />Destino: {{ ROTA.destino.nome }}</span>
+      </div>
+
+      <div v-if="carregando" class="sheet__action">
+        <q-skeleton type="QBtn" class="full-width" height="56px" style="border-radius: 999px" />
+      </div>
+      <div v-else-if="confirmadoHoje" class="sheet__action done">
+        <q-icon name="sym_r_check_circle" size="26px" />
+        <span>Você está na lista de hoje.</span>
+        <q-btn flat dense no-caps label="Desfazer" color="primary" :loading="enviando" @click="desfazer" />
+      </div>
+      <div v-else class="sheet__action">
+        <SlideToConfirm
+          ref="slider"
+          label="Deslize para confirmar presença"
+          :loading="enviando"
+          @confirm="confirmar"
         />
-        <q-btn
-          label="Sair"
-          class="nav-button"
-          icon="logout"
-          @click="sair"
-          rounded
-          unelevated
-        />
       </div>
-    </nav>
-
-    <!-- Conteúdo principal -->
-    <section class="content-container">
-      <!-- Google Maps -->
-      <div class="maps-container">
-        <iframe
-          src="https://www.google.com/maps?q=Vera,+MT&output=embed"
-          width="100%"
-          height="400"
-          style="border-radius: 10px"
-          allowfullscreen
-          loading="lazy"
-        ></iframe>
-      </div>
-
-      <!-- Status -->
-      <div class="status-container">
-        <p class="status-text">Status: {{ status }}</p>
-      </div>
-
-      <!-- Slider interativo -->
-      <div
-        class="slider-container"
-        @mousedown="startDrag"
-        @mousemove="drag"
-        @mouseup="stopDrag"
-        @mouseleave="stopDrag"
-        ref="sliderContainer"
-      >
-        <q-btn
-          class="slide-button"
-          :style="buttonStyle"
-          unelevated
-           @click="confirmarPresenca"
-        >
-        </q-btn>
-      </div>
-
-      <!-- Link contato -->
-      <a class="contact-link" href="https://wa.me/" target="_blank">
-        ENTRAR EM CONTATO COM A ASSOCIAÇÃO
-      </a>
     </section>
-  </div>
+  </q-page>
 </template>
 
-<script>
-import { defineComponent, onMounted, ref, computed } from 'vue';
-import { useRouter } from 'vue-router';
+<script setup lang="ts">
+import { computed, onMounted, ref } from 'vue';
+import { useQuasar } from 'quasar';
 import { api } from 'boot/axios';
-import { logout } from 'src/utils/auth';
+import SlideToConfirm from 'components/SlideToConfirm.vue';
+import RouteMap from 'components/RouteMap.vue';
+import { ROTA } from 'src/config/rota';
+import { iniciais as calcIniciais } from 'src/utils/format';
 
-export default defineComponent({
-  name: 'TelaPrincipal',
-  setup() {
-    const router = useRouter();
+interface Aluno {
+  nome: string;
+  cpf: string;
+}
 
-    const isNavOpen = ref(false);
-    const status = ref('INDEFINIDO');
-    const aluno = ref(null);
+const $q = useQuasar();
+const aluno: Aluno | null = JSON.parse(localStorage.getItem('aluno') || 'null');
 
-    const sliderPosition = ref(0);
-    const isDragging = ref(false);
-    const sliderContainer = ref(null);
+const primeiroNome = computed(() => aluno?.nome?.split(' ')[0] ?? 'estudante');
+const iniciais = computed(() => calcIniciais(aluno?.nome));
 
-    const navButtons = [
-      { id: 1, label: 'Prestação de contas', route: '/prestacao' },
-      { id: 2, label: 'Notificações', route: '/route2' },
-      { id: 3, label: 'Boletos', route: '/boletos' },
-      { id: 4, label: 'Avisos da associação', route: '/avisos' },
-    ];
+// ---------- Presença ----------
+const carregando = ref(true);
+const enviando = ref(false);
+const checkinEm = ref<Date | null>(null);
+const slider = ref<InstanceType<typeof SlideToConfirm> | null>(null);
 
-    const toggleNav = () => {
-      isNavOpen.value = !isNavOpen.value;
-    };
+// O backend guarda só o último check-in, então "confirmado" só vale se foi hoje.
+const confirmadoHoje = computed(() => {
+  if (!checkinEm.value) return false;
+  return checkinEm.value.toDateString() === new Date().toDateString();
+});
+const horaCheckin = computed(() =>
+  checkinEm.value
+    ? checkinEm.value.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+    : ''
+);
 
-    const sair = () => {
-      logout();
-      router.push('/login');
-    };
-
-    const navigateTo = (route) => {
-      router.push(route);
-    };
-
-    onMounted(() => {
-      const alunoStorage = localStorage.getItem('aluno');
-      if (alunoStorage) {
-        aluno.value = JSON.parse(alunoStorage);
-      }
-    });
-
-    const startDrag = () => {
-      isDragging.value = true;
-    };
-
-    const drag = (event) => {
-      if (!isDragging.value) return;
-
-      const container = sliderContainer.value;
-      const containerRect = container.getBoundingClientRect();
-      let newX = event.clientX - containerRect.left;
-
-      newX = Math.max(0, Math.min(newX, containerRect.width - 40));
-      sliderPosition.value = newX;
-    };
-
-   const confirmarPresenca = async () => {
-  if (!aluno.value || !aluno.value.cpf) {
-    alert('Aluno não identificado!');
+async function carregarPresenca() {
+  if (!aluno?.cpf) {
+    carregando.value = false;
     return;
   }
-
   try {
-    const response = await api.post('/checkin/checkin', {
-      cpf: aluno.value.cpf,  // usa cpf aqui
+    const { data } = await api.get(`/alunos/${aluno.cpf}`);
+    const ts = data.checkinTime?._seconds;
+    checkinEm.value = data.checkedIn && ts ? new Date(ts * 1000) : null;
+  } catch {
+    // Sem o status, o aluno ainda consegue confirmar; não vale bloquear a tela.
+    checkinEm.value = null;
+  } finally {
+    carregando.value = false;
+  }
+}
+
+async function confirmar() {
+  if (!aluno?.cpf) return;
+  enviando.value = true;
+  try {
+    await api.post('/checkin/checkin', { cpf: aluno.cpf });
+    checkinEm.value = new Date();
+    $q.notify({
+      type: 'positive',
+      icon: 'sym_r_check_circle',
+      message: 'Presença confirmada',
+      caption: `${ROTA.nome} · ${horaCheckin.value}`,
     });
-
-     if (response.status === 200) {
-      status.value = 'PRESENTE';
-      sliderPosition.value = sliderContainer.value.offsetWidth - 40;
-      alert('Check-in realizado com sucesso!');
-    } else {
-      alert('Erro ao registrar presença. Tente novamente.');
-      sliderPosition.value = 0;
-    }
-  } catch (err) {
-    console.error(err);
-    alert('Erro na conexão com o servidor. Tente novamente mais tarde.');
-    sliderPosition.value = 0;
+  } catch {
+    slider.value?.reset();
+    $q.notify({
+      type: 'negative',
+      icon: 'sym_r_wifi_off',
+      message: 'Não foi possível confirmar agora',
+      caption: 'Verifique sua conexão e deslize de novo.',
+    });
+  } finally {
+    enviando.value = false;
   }
-};
+}
 
-const stopDrag = async () => {
-  if (!isDragging.value) return;
-  isDragging.value = false;
-
-  const container = sliderContainer.value;
-  const limiar = container.offsetWidth * 0.7;
-
-  if (sliderPosition.value >= limiar) {
-    // Confirma presença pelo backend
-    await confirmarPresenca();
-  } else {
-    sliderPosition.value = 0; // Volta pro início
+async function desfazer() {
+  if (!aluno?.cpf) return;
+  enviando.value = true;
+  try {
+    await api.post('/checkin/checkout', { cpf: aluno.cpf });
+    checkinEm.value = null;
+    $q.notify({ message: 'Presença desfeita', icon: 'sym_r_undo' });
+  } catch {
+    $q.notify({ type: 'negative', message: 'Não foi possível desfazer agora. Tente de novo.' });
+  } finally {
+    enviando.value = false;
   }
-};
+}
 
+function fullHeight(offset: number, height: number) {
+  return { height: `${height - offset}px` };
+}
 
-
-    const buttonStyle = computed(() => ({
-      transform: `translateX(${sliderPosition.value}px)`,
-    }));
-
-
-
-    return {
-      isNavOpen,
-      navButtons,
-      status,
-      toggleNav,
-      navigateTo,
-      sair,
-      sliderContainer,
-      sliderPosition,
-      isDragging,
-      startDrag,
-      drag,
-      stopDrag,
-      confirmarPresenca,
-      buttonStyle,
-    };
-  },
-});
+onMounted(carregarPresenca);
 </script>
 
 <style scoped>
-.header {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-color: #354aff;
-  padding: 16px;
-  margin-bottom: 20px;
-}
-
-.profile-icon {
-  margin-right: 10px;
-  border-radius: 50%;
-  overflow: hidden;
-}
-
-.username-link {
-  color: #ffffff;
-  font-size: 18px;
-  text-decoration: none;
-  font-weight: bold;
-}
-
-.nav-toggle {
-  cursor: pointer;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 10px;
-  position: absolute;
-  top: 20px;
-  right: 20px;
-  z-index: 3;
-}
-
-.nav-backdrop {
-  display: none;
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  z-index: 2;
-}
-
-.nav-backdrop-open {
-  display: block;
-}
-
-.nav-bar {
-  position: fixed;
-  top: 0;
-  right: -250px;
-  width: 250px;
-  height: 100%;
-  background-color: #354aff;
-  transition: right 0.3s ease-in-out;
-  z-index: 2;
-}
-
-.nav-bar-open {
-  right: 0;
-}
-
-.nav-buttons {
-  padding: 20px;
-}
-
-.nav-button {
-  margin-bottom: 12px;
-  width: 100%;
-  background-color: #fff;
-}
-
-.content-container {
-  padding: 20px;
-  max-width: 900px;
-  margin: 0 auto;
-}
-
-.maps-container {
-  width: 100%;
-  height: 400px;
-  border-radius: 10px;
+.home {
   position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #e8ebf4;
+}
+
+.home__map {
+  flex: 1;
+  min-height: 220px;
   z-index: 0;
 }
 
-.status-container {
-  margin-bottom: 20px;
-}
-
-.status-text {
-  font-size: 16px;
-  font-weight: 500;
-  color: #0d1132;
-}
-
-.slider-container {
-  width: 200px;
-  height: 40px;
-  background-color: #e2e2e2;
-  border-radius: 20px;
-  position: relative;
-  overflow: hidden;
-  margin-bottom: 20px;
-  user-select: none;
-  cursor: grab;
-}
-
-.slide-button {
-  width: 40px;
-  height: 40px;
-  background-color: #354aff;
-  color: #ffffff;
-  border-radius: 50%;
+.home__top {
   position: absolute;
-  top: 0;
-  left: 0;
-  transition: transform 0.1s ease;
+  top: calc(12px + env(safe-area-inset-top, 0px));
+  left: 14px;
+  right: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 2;
 }
 
-.contact-link {
-  display: block;
-  text-align: center;
-  margin-top: 30px;
-  color: #354aff;
-  text-decoration: none;
+.greet {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 5px 16px 5px 5px;
+  border-radius: 999px;
+  background: var(--ob-surface);
+  color: var(--ob-ink);
+  font-weight: 600;
   font-size: 14px;
-  font-weight: bold;
+  text-decoration: none;
+  box-shadow: 0 4px 14px rgba(18, 20, 42, 0.12);
+}
+
+.greet__avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--ob-blue-100);
+  color: var(--ob-blue-700);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--ob-font-display);
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.round-btn {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: var(--ob-surface);
+  color: var(--ob-ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 14px rgba(18, 20, 42, 0.12);
+}
+
+.greet:focus-visible,
+.round-btn:focus-visible {
+  outline: 3px solid var(--ob-blue-200);
+  outline-offset: 2px;
+}
+
+.sheet {
+  position: relative;
+  z-index: 1;
+  margin-top: -24px;
+  background: var(--ob-surface);
+  border-radius: 26px 26px 0 0;
+  padding: 10px 20px 20px;
+  box-shadow: 0 -8px 24px rgba(18, 20, 42, 0.08);
+}
+
+.sheet__handle {
+  width: 36px;
+  height: 4px;
+  border-radius: 4px;
+  background: var(--ob-border);
+  margin: 0 auto 16px;
+}
+
+.sheet__status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.sheet__hint {
+  font-size: 13px;
+}
+
+.sheet__title {
+  font-size: 1.35rem;
+  font-weight: 700;
+  margin: 12px 0 8px;
+}
+
+.sheet__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  font-size: 13px;
+  color: var(--ob-ink-2);
+}
+
+.sheet__meta span {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.sheet__meta .q-icon {
+  color: var(--ob-muted);
+}
+
+.sheet__action {
+  margin-top: 20px;
+}
+
+.sheet__action.done {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 56px;
+  padding: 0 8px 0 16px;
+  border-radius: 999px;
+  background: var(--ob-ok-bg);
+  color: var(--ob-ok);
+  font-weight: 600;
+}
+
+.sheet__action.done span {
+  flex: 1;
+  color: var(--ob-ink);
 }
 </style>

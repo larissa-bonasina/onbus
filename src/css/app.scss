@@ -1,1 +1,254 @@
-// app global css in SCSS form
+// Tokens e estilos globais da identidade OnBus.
+// Telas usam estas variáveis em vez de cores soltas, para tudo mudar junto.
+
+:root {
+  --ob-blue-50: #eef0ff;
+  --ob-blue-100: #dfe3ff;
+  --ob-blue-200: #bfc7ff;
+  --ob-blue-500: #354aff;
+  --ob-blue-600: #2738db;
+  --ob-blue-700: #1e2bb0;
+  --ob-blue-900: #0f1557;
+
+  --ob-ink: #12142a;
+  --ob-ink-2: #3a3e5c;
+  --ob-muted: #6b7091;
+  --ob-faint: #9499ba;
+  --ob-border: #dfe1ee;
+  --ob-subtle: #eef0f7;
+  --ob-bg: #f6f7fb;
+  --ob-surface: #ffffff;
+
+  --ob-ok: #0e8a59;
+  --ob-ok-bg: #e1f5ec;
+  --ob-warn: #9a5b00;
+  --ob-warn-bg: #fff1d6;
+  --ob-bad: #c62a30;
+  --ob-bad-bg: #fde7e7;
+
+  --ob-radius: 14px;
+  --ob-radius-lg: 22px;
+  --ob-shadow: 0 1px 2px rgba(18, 20, 42, 0.05), 0 8px 24px rgba(18, 20, 42, 0.07);
+  --ob-font-display: 'Outfit', 'DM Sans', system-ui, sans-serif;
+}
+
+body {
+  background: var(--ob-bg);
+  color: var(--ob-ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+// O Quasar dá aos títulos tamanhos e alturas de linha enormes (h1 com 6rem);
+// aqui os títulos passam a seguir a escala do app.
+h1, h2, h3, h4, .ob-display {
+  font-family: var(--ob-font-display);
+  letter-spacing: -0.025em;
+  line-height: 1.15;
+  color: var(--ob-ink);
+  margin: 0;
+}
+
+h1 { font-size: 1.6rem; font-weight: 700; }
+h2 { font-size: 1.25rem; font-weight: 600; }
+h3 { font-size: 1.1rem; font-weight: 600; }
+h4 { font-size: 1rem; font-weight: 600; }
+
+.ob-title {
+  font-family: var(--ob-font-display);
+  font-weight: 700;
+  font-size: 1.6rem;
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+}
+
+.ob-muted {
+  color: var(--ob-muted);
+}
+
+// Quasar: botões sem caixa-alta e com peso de marca
+.q-btn {
+  text-transform: none;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+// Etiquetas de status: sempre ponto + cor + texto
+.ob-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 26px;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+
+  &::before {
+    content: '';
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+
+  &--ok { background: var(--ob-ok-bg); color: var(--ob-ok); }
+  &--warn { background: var(--ob-warn-bg); color: var(--ob-warn); }
+  &--bad { background: var(--ob-bad-bg); color: var(--ob-bad); }
+  &--neutral { background: var(--ob-subtle); color: #565b7c; }
+  &--brand { background: var(--ob-blue-50); color: var(--ob-blue-700); }
+}
+
+.ob-card {
+  background: var(--ob-surface);
+  border-radius: var(--ob-radius-lg);
+  box-shadow: var(--ob-shadow);
+}
+
+// ---------- Painel da associação (desktop primeiro) ----------
+.adm-page {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 32px 28px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+
+  @media (max-width: 600px) {
+    padding: 20px 16px 32px;
+  }
+}
+
+.adm-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+
+  h1 {
+    font-size: 1.75rem;
+    letter-spacing: -0.03em;
+  }
+
+  p {
+    margin: 4px 0 0;
+    color: var(--ob-muted);
+    font-size: 14px;
+  }
+}
+
+.adm-card {
+  background: var(--ob-surface);
+  border: 1px solid var(--ob-border);
+  border-radius: 18px;
+}
+
+.adm-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--ob-subtle);
+
+  h2 {
+    font-size: 1.02rem;
+  }
+}
+
+.adm-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.adm-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 13px 20px;
+  border-bottom: 1px solid var(--ob-subtle);
+  font-size: 14px;
+
+  &:last-child {
+    border-bottom: 0;
+  }
+}
+
+.adm-row__main {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+
+  strong {
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  span {
+    color: var(--ob-muted);
+    font-size: 13px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.adm-avatar {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--ob-blue-50);
+  color: var(--ob-blue-700);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--ob-font-display);
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.adm-num {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.adm-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 36px 20px;
+  text-align: center;
+  color: var(--ob-faint);
+
+  strong {
+    color: var(--ob-ink);
+  }
+
+  span {
+    font-size: 14px;
+  }
+}
+
+.adm-toolbar {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--ob-subtle);
+}
+
+// Toasts (Notify) no padrão do app, substituindo o alert() do navegador
+.q-notification.ob-toast {
+  border-radius: 16px;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 500;
+  box-shadow: 0 10px 30px rgba(18, 20, 42, 0.18);
+}

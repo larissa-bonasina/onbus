@@ -30,7 +30,15 @@ router.get('/', verificarAdmin, alunoController.listarAlunos);
 
 router.get('/:cpf', verificarAutenticado, verificarDonoOuAdmin, alunoController.obterAluno);
 
-router.put('/:cpf', verificarAutenticado, verificarDonoOuAdmin, alunoController.atualizarAluno);
+const atualizacaoValidation = [
+  body('email').optional().isEmail().withMessage('E-mail inválido.').normalizeEmail(),
+  body('nome').optional().trim().notEmpty().withMessage('Nome não pode ficar vazio.'),
+  body('numero').optional().trim().notEmpty().withMessage('Telefone não pode ficar vazio.'),
+  body('endereco').optional().trim().notEmpty().withMessage('Endereço não pode ficar vazio.'),
+  body('curso').optional().trim().notEmpty().withMessage('Curso não pode ficar vazio.'),
+];
+
+router.put('/:cpf', verificarAutenticado, verificarDonoOuAdmin, atualizacaoValidation, handleValidation, alunoController.atualizarAluno);
 
 router.delete('/:cpf', verificarAdmin, alunoController.deletarAluno);
 
