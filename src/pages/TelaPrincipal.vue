@@ -19,6 +19,17 @@
     <section class="sheet">
       <div class="sheet__handle" />
 
+      <div v-if="rota?.alerta" :class="`alerta alerta--${TIPOS_ALERTA[rota.alerta.tipo].tom}`" role="alert">
+        <q-icon :name="TIPOS_ALERTA[rota.alerta.tipo].icon" size="24px" class="alerta__icon" />
+        <div>
+          <strong>{{ tituloAlerta(rota.alerta) }}</strong>
+          <p>{{ rota.alerta.mensagem }}</p>
+          <time v-if="rota.alerta.criadoEm" class="alerta__hora">
+            Aviso da associação às {{ new Date(rota.alerta.criadoEm).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) }}
+          </time>
+        </div>
+      </div>
+
       <div class="sheet__status">
         <span v-if="confirmadoHoje" class="ob-chip ob-chip--ok">Presença confirmada</span>
         <span v-else class="ob-chip ob-chip--neutral">Presença não confirmada</span>
@@ -52,6 +63,10 @@
         <span>Você está na lista de hoje.</span>
         <q-btn flat dense no-caps label="Desfazer" color="primary" :loading="enviando" @click="desfazer" />
       </div>
+      <div v-else-if="rota?.alerta?.tipo === 'cancelada'" class="sheet__action cancelada">
+        <q-icon name="sym_r_event_busy" size="22px" />
+        <span>Sem viagem hoje, não é preciso confirmar presença.</span>
+      </div>
       <div v-else-if="rota" class="sheet__action">
         <SlideToConfirm
           ref="slider"
@@ -65,12 +80,12 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import { useQuasar } from 'quasar';
 import { api } from 'boot/axios';
 import SlideToConfirm from 'components/SlideToConfirm.vue';
 import RouteMap from 'components/RouteMap.vue';
-import { resumoDias, rodaHoje, type Rota } from 'src/utils/rotas';
+import { TIPOS_ALERTA, resumoDias, rodaHoje, tituloAlerta, type Rota } from 'src/utils/rotas';
 import { mensagemDeErro } from 'src/composables/useAdminData';
 import { iniciais as calcIniciais } from 'src/utils/format';
 
@@ -93,7 +108,8 @@ async function carregarRota() {
   try {
     rota.value = (await api.get('/rotas/minha')).data;
   } catch {
-    rota.value = null;
+    // Numa falha da recarga periódica, mantém a rota que já está na tela.
+    if (carregandoRota.value) rota.value = null;
   } finally {
     carregandoRota.value = false;
   }
@@ -173,10 +189,18 @@ function fullHeight(offset: number, height: number) {
   return { height: `${height - offset}px` };
 }
 
+// Atrasos e desvios mudam ao longo do dia: recarrega a rota (e o alerta) a cada minuto com a tela visível.
+let timer: ReturnType<typeof setInterval> | undefined;
+
 onMounted(() => {
   carregarRota();
   carregarPresenca();
+  timer = setInterval(() => {
+    if (document.visibilityState === 'visible') carregarRota();
+  }, 60_000);
 });
+
+onBeforeUnmount(() => clearInterval(timer));
 </script>
 
 <style scoped>
@@ -275,6 +299,59 @@ onMounted(() => {
   border-radius: 4px;
   background: var(--ob-border);
   margin: 0 auto 16px;
+}
+
+.alerta {
+  display: flex;
+  gap: 12px;
+  padding: 14px 16px;
+  margin-bottom: 16px;
+  border-radius: var(--ob-radius);
+}
+
+.alerta--warn {
+  background: var(--ob-warn-bg);
+  color: var(--ob-warn);
+}
+
+.alerta--bad {
+  background: var(--ob-bad-bg);
+  color: var(--ob-bad);
+}
+
+.alerta__icon {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.alerta strong {
+  display: block;
+  font-size: 15px;
+}
+
+.alerta p {
+  margin: 2px 0 4px;
+  color: var(--ob-ink);
+  font-size: 14px;
+  white-space: pre-line;
+}
+
+.alerta__hora {
+  font-size: 12px;
+  opacity: 0.85;
+}
+
+.sheet__action.cancelada {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 56px;
+  padding: 0 16px;
+  border-radius: 999px;
+  background: var(--ob-subtle);
+  color: var(--ob-ink-2);
+  font-weight: 600;
+  font-size: 14px;
 }
 
 .sheet__status {

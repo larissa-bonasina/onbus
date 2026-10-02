@@ -14,6 +14,27 @@ export interface Rota {
   horarioIda: string; // "HH:MM"
   horarioVolta: string | null;
   dias: number[]; // 0 = domingo … 6 = sábado, como Date.getDay()
+  alerta: AlertaRota | null; // o backend só devolve o alerta do dia
+}
+
+export type TipoAlerta = 'atraso' | 'desvio' | 'cancelada';
+
+export interface AlertaRota {
+  tipo: TipoAlerta;
+  mensagem: string;
+  atrasoMin: number | null;
+  criadoEm: string | null;
+}
+
+export const TIPOS_ALERTA: Record<TipoAlerta, { label: string; icon: string; tom: 'warn' | 'bad' }> = {
+  atraso: { label: 'Atraso', icon: 'sym_r_schedule', tom: 'warn' },
+  desvio: { label: 'Desvio de rota', icon: 'sym_r_alt_route', tom: 'warn' },
+  cancelada: { label: 'Viagem cancelada', icon: 'sym_r_block', tom: 'bad' },
+};
+
+// "Atraso de 40 min", "Desvio de rota", "Viagem cancelada"
+export function tituloAlerta(a: AlertaRota): string {
+  return a.tipo === 'atraso' && a.atrasoMin ? `Atraso de ${a.atrasoMin} min` : TIPOS_ALERTA[a.tipo].label;
 }
 
 export const DIAS_SEMANA = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];

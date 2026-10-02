@@ -91,6 +91,22 @@
             <p class="ob-muted">
               Ida {{ r.horarioIda }}<template v-if="r.horarioVolta"> · Volta {{ r.horarioVolta }}</template> · {{ resumoDias(r.dias) }}
             </p>
+            <div class="rota__alerta">
+              <span v-if="r.alerta" :class="`ob-chip ob-chip--${TIPOS_ALERTA[r.alerta.tipo].tom}`">
+                <q-icon :name="TIPOS_ALERTA[r.alerta.tipo].icon" size="15px" />
+                {{ tituloAlerta(r.alerta) }}
+              </span>
+              <q-btn
+                flat
+                dense
+                no-caps
+                size="sm"
+                :color="r.alerta ? 'grey-8' : 'primary'"
+                :icon="r.alerta ? 'sym_r_edit_notifications' : 'sym_r_campaign'"
+                :label="r.alerta ? 'Editar alerta' : 'Avisar atraso ou desvio'"
+                @click="abrirAlerta(r)"
+              />
+            </div>
           </li>
         </ul>
         <div v-else-if="!carregando" class="adm-empty">
@@ -99,6 +115,8 @@
         </div>
       </section>
     </div>
+
+    <AlertaRotaDialog v-model="dialogoAlerta" :rota="rotaAlerta" @atualizada="substituir" />
   </q-page>
 </template>
 
@@ -107,8 +125,9 @@ import { onMounted, reactive, ref } from 'vue';
 import { QForm, useQuasar } from 'quasar';
 import { api } from 'boot/axios';
 import RouteMap from 'components/RouteMap.vue';
+import AlertaRotaDialog from 'components/AlertaRotaDialog.vue';
 import { mensagemDeErro } from 'src/composables/useAdminData';
-import { DIAS_SEMANA, geocodificar, resumoDias, type PontoRota, type Rota } from 'src/utils/rotas';
+import { DIAS_SEMANA, TIPOS_ALERTA, geocodificar, resumoDias, tituloAlerta, type PontoRota, type Rota } from 'src/utils/rotas';
 
 type Campo = 'embarque' | 'destino';
 interface Local { texto: string; ponto: PontoRota | null; buscando: boolean }
@@ -117,6 +136,16 @@ const $q = useQuasar();
 const rotas = ref<Rota[]>([]);
 const carregando = ref(true);
 const erro = ref(false);
+
+const dialogoAlerta = ref(false);
+const rotaAlerta = ref<Rota | null>(null);
+
+function abrirAlerta(r: Rota) {
+  rotaAlerta.value = r;
+  dialogoAlerta.value = true;
+}
+
+const substituir = (nova: Rota) => (rotas.value = rotas.value.map((r) => (r.id === nova.id ? nova : r)));
 
 const form = ref<QForm | null>(null);
 const editando = ref<string | null>(null);
@@ -323,6 +352,20 @@ onMounted(carregar);
   margin: 2px 0 0;
   font-size: 14px;
   color: var(--ob-ink-2);
+}
+
+.rota__alerta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.rota__alerta .ob-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .rota p.ob-muted {

@@ -1,10 +1,21 @@
 const admin = require('firebase-admin');
 const db = admin.firestore();
-const { rotaDoAluno } = require('../services/viagens');
+const { dataLocal, rotaDoAluno } = require('../services/viagens');
 
 const ponto = (p) => ({ nome: p.nome, lat: Number(p.lat), lng: Number(p.lng) });
 
 const paraJson = (doc) => rotaJson(doc.id, doc.data());
+
+// O alerta vale só no dia em que foi publicado; depois some sozinho.
+function alertaAtivo(a) {
+  if (!a || a.data !== dataLocal()) return null;
+  return {
+    tipo: a.tipo,
+    mensagem: a.mensagem,
+    atrasoMin: a.atrasoMin ?? null,
+    criadoEm: a.criadoEm?.toDate ? a.criadoEm.toDate().toISOString() : null,
+  };
+}
 
 function rotaJson(id, d) {
   return {
@@ -15,6 +26,7 @@ function rotaJson(id, d) {
     horarioIda: d.horarioIda,
     horarioVolta: d.horarioVolta || null,
     dias: d.dias || [],
+    alerta: alertaAtivo(d.alerta),
   };
 }
 
@@ -110,5 +122,43 @@ exports.vincularAluno = async (req, res) => {
   } catch (err) {
     console.error('Erro ao vincular aluno à rota:', err);
     res.status(500).json({ message: 'Erro ao vincular o aluno à rota.' });
+  }
+};
+
+// Publica (ou substitui) o alerta de hoje da rota: atraso, desvio ou viagem cancelada.
+exports.publicarAlerta = async (req, res) => {
+  const ref = db.collection('rotas').doc(req.params.id);
+  const { tipo, mensagem } = req.body;
+  try {
+    if (!(await ref.get()).exists) {
+      return res.status(404).json({ message: 'Rota não encontrada.' });
+    }
+    await ref.update({
+      alerta: {
+        tipo,
+        mensagem: mensagem.trim(),
+        atrasoMin: tipo === 'atraso' && req.body.atrasoMin ? Number(req.body.atrasoMin) : null,
+        data: dataLocal(),
+        criadoEm: admin.firestore.FieldValue.serverTimestamp(),
+      },
+    });
+    res.json(paraJson(await ref.get()));
+  } catch (err) {
+    console.error('Erro ao publicar alerta:', err);
+    res.status(500).json({ message: 'Erro ao publicar o alerta.' });
+  }
+};
+
+exports.encerrarAlerta = async (req, res) => {
+  const ref = db.collection('rotas').doc(req.params.id);
+  try {
+    if (!(await ref.get()).exists) {
+      return res.status(404).json({ message: 'Rota não encontrada.' });
+    }
+    await ref.update({ alerta: null });
+    res.json(paraJson(await ref.get()));
+  } catch (err) {
+    console.error('Erro ao encerrar alerta:', err);
+    res.status(500).json({ message: 'Erro ao encerrar o alerta.' });
   }
 };

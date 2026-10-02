@@ -31,6 +31,15 @@ router.post('/', verificarAdmin, rotaValidation, handleValidation, rotasControll
 router.put('/:id', verificarAdmin, rotaValidation, handleValidation, rotasController.atualizar);
 router.delete('/:id', verificarAdmin, rotasController.remover);
 
+// Alerta do dia (atraso, desvio, viagem cancelada) — o problema da BR-163 que motivou o app.
+const alertaValidation = [
+  body('tipo').isIn(['atraso', 'desvio', 'cancelada']).withMessage('Tipo de alerta inválido.'),
+  body('mensagem').trim().isLength({ min: 3, max: 500 }).withMessage('A mensagem deve ter entre 3 e 500 caracteres.'),
+  body('atrasoMin').optional({ values: 'falsy' }).isInt({ min: 1, max: 600 }).withMessage('Atraso deve ser entre 1 e 600 minutos.'),
+];
+router.put('/:id/alerta', verificarAdmin, alertaValidation, handleValidation, rotasController.publicarAlerta);
+router.delete('/:id/alerta', verificarAdmin, rotasController.encerrarAlerta);
+
 router.put(
   '/alunos/:cpf',
   verificarAdmin,
