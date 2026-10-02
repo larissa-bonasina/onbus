@@ -88,20 +88,21 @@
 
 <script setup lang="ts">
 import { computed, onMounted } from 'vue';
-import { useAlunos, useBoletos, checkinDeHoje, hora } from 'src/composables/useAdminData';
+import { useAlunos, useBoletos, usePresencas, hora } from 'src/composables/useAdminData';
 import { mesReferencia, reais, statusEfetivo } from 'src/utils/boletos';
 import { iniciais } from 'src/utils/format';
 
 const { alunos, carregando: c1, erro: e1, carregar: carregarAlunos } = useAlunos();
 const { boletos, carregando: c2, erro: e2, carregar: carregarBoletos } = useBoletos();
-const carregando = computed(() => c1.value || c2.value);
-const erro = computed(() => e1.value || e2.value);
+const { presencas, carregando: c3, erro: e3, carregar: carregarPresencas } = usePresencas();
+const carregando = computed(() => c1.value || c2.value || c3.value);
+const erro = computed(() => e1.value || e2.value || e3.value);
 
 const hojeExtenso = new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' }).replace(/^./, (c) => c.toUpperCase());
 
 const presentes = computed(() =>
   alunos.value
-    .map((aluno) => ({ aluno, em: checkinDeHoje(aluno) }))
+    .map((aluno) => ({ aluno, em: presencas.value.get(aluno.cpf)?.em ?? null }))
     .filter((p): p is { aluno: typeof p.aluno; em: Date } => !!p.em)
     .sort((a, b) => b.em.getTime() - a.em.getTime())
 );
@@ -119,6 +120,7 @@ const nomeDe = (cpf: string) => nomes.value.get(cpf) ?? 'Aluno removido';
 function recarregar() {
   carregarAlunos();
   carregarBoletos();
+  carregarPresencas();
 }
 
 onMounted(recarregar);

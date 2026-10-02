@@ -1,12 +1,14 @@
 const admin = require('firebase-admin');
 const db = admin.firestore();
+const { rotaDoAluno } = require('../services/viagens');
 
 const ponto = (p) => ({ nome: p.nome, lat: Number(p.lat), lng: Number(p.lng) });
 
-const paraJson = (doc) => {
-  const d = doc.data();
+const paraJson = (doc) => rotaJson(doc.id, doc.data());
+
+function rotaJson(id, d) {
   return {
-    id: doc.id,
+    id,
     nome: d.nome,
     embarque: d.embarque,
     destino: d.destino,
@@ -14,7 +16,7 @@ const paraJson = (doc) => {
     horarioVolta: d.horarioVolta || null,
     dias: d.dias || [],
   };
-};
+}
 
 // Só os campos conhecidos entram no banco, já normalizados.
 function dadosDaRota(body) {
@@ -41,16 +43,8 @@ exports.listar = async (req, res) => {
 // Rota do aluno logado. Sem rotaId definido, vale a única rota da associação (se houver só uma).
 exports.minha = async (req, res) => {
   try {
-    const alunoDoc = req.user?.cpf ? await db.collection('alunos').doc(req.user.cpf).get() : null;
-    const rotaId = alunoDoc?.exists ? alunoDoc.data().rotaId : null;
-
-    if (rotaId) {
-      const rotaDoc = await db.collection('rotas').doc(rotaId).get();
-      if (rotaDoc.exists) return res.json(paraJson(rotaDoc));
-    }
-
-    const snap = await db.collection('rotas').limit(2).get();
-    res.json(snap.size === 1 ? paraJson(snap.docs[0]) : null);
+    const rota = await rotaDoAluno(req.user?.cpf);
+    res.json(rota ? rotaJson(rota.id, rota) : null);
   } catch (err) {
     console.error('Erro ao obter rota do aluno:', err);
     res.status(500).json({ message: 'Erro ao carregar sua rota.' });

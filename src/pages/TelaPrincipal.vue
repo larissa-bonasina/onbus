@@ -44,7 +44,7 @@
         <p class="sheet__meta">A associação ainda não vinculou você a uma rota.</p>
       </template>
 
-      <div v-if="carregando" class="sheet__action">
+      <div v-if="carregando || carregandoRota" class="sheet__action">
         <q-skeleton type="QBtn" class="full-width" height="56px" style="border-radius: 999px" />
       </div>
       <div v-else-if="confirmadoHoje" class="sheet__action done">
@@ -52,7 +52,7 @@
         <span>Você está na lista de hoje.</span>
         <q-btn flat dense no-caps label="Desfazer" color="primary" :loading="enviando" @click="desfazer" />
       </div>
-      <div v-else class="sheet__action">
+      <div v-else-if="rota" class="sheet__action">
         <SlideToConfirm
           ref="slider"
           label="Deslize para confirmar presença"
@@ -71,6 +71,7 @@ import { api } from 'boot/axios';
 import SlideToConfirm from 'components/SlideToConfirm.vue';
 import RouteMap from 'components/RouteMap.vue';
 import { resumoDias, rodaHoje, type Rota } from 'src/utils/rotas';
+import { mensagemDeErro } from 'src/composables/useAdminData';
 import { iniciais as calcIniciais } from 'src/utils/format';
 
 interface Aluno {
@@ -104,11 +105,8 @@ const enviando = ref(false);
 const checkinEm = ref<Date | null>(null);
 const slider = ref<InstanceType<typeof SlideToConfirm> | null>(null);
 
-// O backend guarda só o último check-in, então "confirmado" só vale se foi hoje.
-const confirmadoHoje = computed(() => {
-  if (!checkinEm.value) return false;
-  return checkinEm.value.toDateString() === new Date().toDateString();
-});
+// O backend responde pela viagem de hoje (no fuso de MT), então qualquer check-in devolvido é de hoje.
+const confirmadoHoje = computed(() => !!checkinEm.value);
 const horaCheckin = computed(() =>
   checkinEm.value
     ? checkinEm.value.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
@@ -121,9 +119,8 @@ async function carregarPresenca() {
     return;
   }
   try {
-    const { data } = await api.get(`/alunos/${aluno.cpf}`);
-    const ts = data.checkinTime?._seconds;
-    checkinEm.value = data.checkedIn && ts ? new Date(ts * 1000) : null;
+    const { data } = await api.get('/checkin/hoje');
+    checkinEm.value = data.checkinEm ? new Date(data.checkinEm) : null;
   } catch {
     // Sem o status, o aluno ainda consegue confirmar; não vale bloquear a tela.
     checkinEm.value = null;
@@ -136,7 +133,7 @@ async function confirmar() {
   if (!aluno?.cpf) return;
   enviando.value = true;
   try {
-    await api.post('/checkin/checkin', { cpf: aluno.cpf });
+    await api.post('/checkin/checkin');
     checkinEm.value = new Date();
     $q.notify({
       type: 'positive',
@@ -144,13 +141,14 @@ async function confirmar() {
       message: 'Presença confirmada',
       caption: rota.value ? `${rota.value.nome} · ${horaCheckin.value}` : horaCheckin.value,
     });
-  } catch {
+  } catch (e) {
     slider.value?.reset();
+    const semResposta = !(e as { response?: unknown }).response;
     $q.notify({
       type: 'negative',
-      icon: 'sym_r_wifi_off',
+      icon: semResposta ? 'sym_r_wifi_off' : 'sym_r_error',
       message: 'Não foi possível confirmar agora',
-      caption: 'Verifique sua conexão e deslize de novo.',
+      caption: semResposta ? 'Verifique sua conexão e deslize de novo.' : mensagemDeErro(e, 'Tente de novo em instantes.'),
     });
   } finally {
     enviando.value = false;
@@ -161,7 +159,7 @@ async function desfazer() {
   if (!aluno?.cpf) return;
   enviando.value = true;
   try {
-    await api.post('/checkin/checkout', { cpf: aluno.cpf });
+    await api.post('/checkin/checkout');
     checkinEm.value = null;
     $q.notify({ message: 'Presença desfeita', icon: 'sym_r_undo' });
   } catch {

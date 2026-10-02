@@ -3,9 +3,15 @@
     <header class="adm-head">
       <div>
         <h1>Presença</h1>
-        <p>{{ hojeExtenso }} · {{ presentes }} de {{ alunos.length }} confirmaram</p>
+        <p>{{ presentes }} de {{ alunos.length }} confirmaram</p>
       </div>
-      <q-btn flat no-caps color="primary" icon="sym_r_refresh" label="Atualizar" :loading="carregando" @click="carregar" />
+      <div class="dia" role="group" aria-label="Dia da lista">
+        <q-btn flat round dense icon="sym_r_chevron_left" aria-label="Dia anterior" @click="mudarDia(-1)" />
+        <span class="dia__label">{{ diaExtenso }}</span>
+        <q-btn flat round dense icon="sym_r_chevron_right" aria-label="Próximo dia" :disable="ehHoje" @click="mudarDia(1)" />
+        <q-btn v-if="!ehHoje" flat dense no-caps color="primary" label="Hoje" @click="irParaHoje" />
+        <q-btn flat round dense color="primary" icon="sym_r_refresh" aria-label="Atualizar" :loading="carregando" @click="recarregar" />
+      </div>
     </header>
 
     <section class="adm-card">
@@ -40,9 +46,9 @@
           <span class="adm-avatar">{{ iniciais(item.aluno.nome) }}</span>
           <span class="adm-row__main">
             <strong>{{ item.aluno.nome }}</strong>
-            <span>{{ item.aluno.curso }} · {{ formatarTelefone(item.aluno.numero) }}</span>
+            <span>{{ item.aluno.curso }} · {{ formatarTelefone(item.aluno.numero) }}<template v-if="item.p"> · {{ item.p.rotaNome }}</template></span>
           </span>
-          <span v-if="item.em" class="ob-chip ob-chip--ok">Presente · {{ hora(item.em) }}</span>
+          <span v-if="item.p" class="ob-chip ob-chip--ok">Presente · {{ hora(item.p.em) }}</span>
           <span v-else class="ob-chip ob-chip--neutral">Ausente</span>
         </li>
       </ul>
@@ -56,31 +62,74 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
-import { useAlunos, checkinDeHoje, hora } from 'src/composables/useAdminData';
+import { useAlunos, usePresencas, hora, isoDia } from 'src/composables/useAdminData';
 import { formatarTelefone, iniciais } from 'src/utils/format';
 
-const { alunos, carregando, erro, carregar } = useAlunos();
+const { alunos, carregando: c1, erro: e1, carregar: carregarAlunos } = useAlunos();
+const { presencas, carregando: c2, erro: e2, carregar: carregarPresencas } = usePresencas();
+const carregando = computed(() => c1.value || c2.value);
+const erro = computed(() => e1.value || e2.value);
 const busca = ref('');
 const filtro = ref<'todos' | 'presentes' | 'ausentes'>('todos');
-const hojeExtenso = new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' }).replace(/^./, (c) => c.toUpperCase());
 
-const comStatus = computed(() => alunos.value.map((aluno) => ({ aluno, em: checkinDeHoje(aluno) })));
-const presentes = computed(() => comStatus.value.filter((i) => i.em).length);
+// ---------- Dia exibido ----------
+const dia = ref(new Date());
+const ehHoje = computed(() => isoDia(dia.value) === isoDia(new Date()));
+const diaExtenso = computed(() =>
+  ehHoje.value
+    ? 'Hoje'
+    : dia.value.toLocaleDateString('pt-BR', { weekday: 'short', day: 'numeric', month: 'short' }).replace(/^./, (c) => c.toUpperCase())
+);
+
+function mudarDia(delta: number) {
+  const d = new Date(dia.value);
+  d.setDate(d.getDate() + delta);
+  dia.value = d;
+  carregarPresencas(isoDia(d));
+}
+
+function irParaHoje() {
+  dia.value = new Date();
+  carregarPresencas();
+}
+
+function recarregar() {
+  carregarAlunos();
+  carregarPresencas(ehHoje.value ? undefined : isoDia(dia.value));
+}
+
+// ---------- Lista ----------
+const comStatus = computed(() => alunos.value.map((aluno) => ({ aluno, p: presencas.value.get(aluno.cpf) ?? null })));
+const presentes = computed(() => comStatus.value.filter((i) => i.p).length);
 
 const normalizar = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 
 const lista = computed(() => {
   const q = normalizar(busca.value ?? '');
   return comStatus.value
-    .filter((i) => (filtro.value === 'presentes' ? i.em : filtro.value === 'ausentes' ? !i.em : true))
+    .filter((i) => (filtro.value === 'presentes' ? i.p : filtro.value === 'ausentes' ? !i.p : true))
     .filter((i) => !q || normalizar(`${i.aluno.nome} ${i.aluno.curso}`).includes(q))
-    .sort((a, b) => Number(!!b.em) - Number(!!a.em) || a.aluno.nome.localeCompare(b.aluno.nome, 'pt-BR'));
+    .sort((a, b) => Number(!!b.p) - Number(!!a.p) || a.aluno.nome.localeCompare(b.aluno.nome, 'pt-BR'));
 });
 
-onMounted(carregar);
+onMounted(() => {
+  carregarAlunos();
+  carregarPresencas();
+});
 </script>
 
 <style scoped>
+.dia {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.dia__label {
+  min-width: 96px;
+  text-align: center;
+  font-weight: 600;
+}
 .search {
   flex: 1;
   min-width: 200px;

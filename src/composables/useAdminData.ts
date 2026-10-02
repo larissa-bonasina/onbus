@@ -10,19 +10,46 @@ export interface AlunoAdmin {
   numero: string;
   endereco?: string;
   rotaId?: string | null;
-  checkedIn?: boolean;
-  checkinTime?: { _seconds: number } | null;
 }
 
-// O backend guarda só o último check-in de cada aluno; "presente" = check-in feito hoje.
-export function checkinDeHoje(a: AlunoAdmin, hoje = new Date()): Date | null {
-  const ts = a.checkinTime?._seconds;
-  if (!a.checkedIn || !ts) return null;
-  const d = new Date(ts * 1000);
-  return d.toDateString() === hoje.toDateString() ? d : null;
+export interface Presenca {
+  cpf: string;
+  nome: string;
+  rotaId: string;
+  rotaNome: string;
+  em: Date;
 }
 
 export const hora = (d: Date) => d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
+// AAAA-MM-DD no fuso do navegador (o mesmo dia que o admin vê no calendário).
+export const isoDia = (d: Date) =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
+// Presenças de um dia, indexadas por CPF. Sem data, o backend usa o dia de hoje.
+export function usePresencas() {
+  const presencas = ref(new Map<string, Presenca>());
+  const carregando = ref(true);
+  const erro = ref(false);
+  async function carregar(data?: string) {
+    carregando.value = true;
+    erro.value = false;
+    try {
+      const { data: res } = await api.get('/checkin/presencas', { params: data ? { data } : {} });
+      presencas.value = new Map(
+        (res.presencas as (Omit<Presenca, 'em'> & { checkinEm: string | null })[]).map((p) => [
+          p.cpf,
+          { ...p, em: new Date(p.checkinEm ?? 0) },
+        ])
+      );
+    } catch {
+      erro.value = true;
+    } finally {
+      carregando.value = false;
+    }
+  }
+  return { presencas, carregando, erro, carregar };
+}
 
 export function useAlunos() {
   const alunos = ref<AlunoAdmin[]>([]);
